@@ -1,0 +1,1745 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Scarpline — Official Records</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#05070A; --panel:#0A0E13; --line:rgba(150,190,220,.13); --line2:rgba(150,190,220,.07);
+  --chalk:#CBD4DD; --ash:#7E8B98; --dim:#4A5560;
+  --acc:#4FE3E0; --acc2:#E8A94F; --acc3:#7AA2F7; --accSoft:rgba(79,227,224,.42);
+  --display:"Space Grotesk",system-ui,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,monospace;
+  --gut:clamp(18px,4.6vw,72px); --rail:104px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;scroll-padding-top:76px;-webkit-text-size-adjust:100%}
+body{background:var(--bg);color:var(--chalk);font-family:var(--display);font-size:16px;line-height:1.62;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+::selection{background:var(--acc);color:#05070A}
+a{color:inherit;text-decoration:none}
+a:hover{color:var(--acc)}
+:focus-visible{outline:1px solid var(--acc);outline-offset:3px}
+@keyframes settle{from{opacity:0;filter:blur(14px);letter-spacing:.06em}to{opacity:1;filter:blur(0);letter-spacing:-.045em}}
+@keyframes rise{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+@keyframes pulse{0%,100%{opacity:.35;transform:scale(.9)}50%{opacity:1;transform:scale(1.15)}}
+@keyframes drop{0%{transform:translateY(-100%)}100%{transform:translateY(400%)}}
+@keyframes sweep{0%{transform:translateX(-100%)}100%{transform:translateX(300%)}}
+@keyframes driftgrid{from{background-position:0 0,0 0}to{background-position:0 120px,120px 0}}
+@keyframes shimmer{0%{background-position:0% 50%}100%{background-position:200% 50%}}
+@keyframes marquee{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+@keyframes ping{0%{transform:scale(.6);opacity:.9}100%{transform:scale(2.6);opacity:0}}
+@keyframes flick{0%,100%{opacity:1}92%{opacity:1}94%{opacity:.55}96%{opacity:1}}
+::-webkit-scrollbar{width:9px;height:9px}
+::-webkit-scrollbar-track{background:#05070A}
+::-webkit-scrollbar-thumb{background:#1D2833;border:2px solid #05070A}
+::-webkit-scrollbar-thumb:hover{background:var(--acc)}
+input{font:inherit;color:inherit;background:none;border:none;outline:none}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}html{scroll-behavior:auto}}
+</style>
+</helmet>
+
+<div style="position:relative;min-height:100vh;background:var(--bg)">
+
+  <canvas id="strata-canvas" style="position:fixed;inset:0;z-index:0;pointer-events:none;width:100%;height:100%"></canvas>
+
+  <div id="boot" style="position:fixed;inset:0;z-index:200;overflow:hidden;background:#05070A;transition:background-color .9s ease">
+    <canvas id="boot-canvas" style="position:absolute;inset:0;width:100%;height:100%"></canvas>
+    <div id="boot-ui" style="position:absolute;inset:0;pointer-events:none;transition:opacity .5s ease">
+      <div style="position:absolute;top:var(--gut);left:var(--gut);display:flex;align-items:center;gap:10px;font-family:var(--mono);font-size:10px;letter-spacing:.28em;text-transform:uppercase;color:var(--dim)">
+        <span style="width:7px;height:7px;border-radius:50%;background:var(--acc);box-shadow:0 0 12px var(--acc);animation:flick 2.2s infinite"></span>
+        <span>Scarpline · germination</span>
+      </div>
+      <div style="position:absolute;bottom:var(--gut);left:var(--gut);right:var(--gut);display:flex;align-items:flex-end;justify-content:space-between;gap:24px;font-family:var(--mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--dim)">
+        <div style="display:grid;gap:10px;min-width:min(340px,52vw)">
+          <span id="boot-stage" style="color:var(--ash)">seeding root node</span>
+          <span style="display:block;height:1px;background:var(--line)">
+            <span id="boot-bar" style="display:block;height:1px;width:0%;background:var(--acc);box-shadow:0 0 10px var(--acc)"></span>
+          </span>
+          <span style="display:flex;gap:22px">
+            <span>nodes <b id="boot-nodes" style="color:var(--acc);font-weight:400">0</b></span>
+            <span>depth <b id="boot-depth" style="color:var(--acc);font-weight:400">0</b></span>
+          </span>
+        </div>
+        <span style="opacity:.7">click to skip</span>
+      </div>
+    </div>
+  </div>
+
+  <div id="gauge" style="position:fixed;left:max(9px,calc(var(--gut) - 52px));top:50%;transform:translateY(-50%);z-index:40;display:none;flex-direction:column;align-items:center;gap:9px;pointer-events:none;opacity:0;transition:opacity .45s ease;font-family:var(--mono);font-size:9px;letter-spacing:.16em;color:var(--dim)">
+    <span>000</span>
+    <span style="position:relative;display:block;width:3px;height:min(44vh,330px);background:linear-gradient(180deg,#8FB6C9,#E8A94F 26%,#E0604A 50%,#4FE3B0 74%,#5C7FA6);opacity:.55">
+      <span id="gauge-mark" style="position:absolute;left:-5px;top:0;width:13px;height:13px;border:1px solid var(--acc);background:rgba(5,7,10,.85);box-shadow:0 0 14px var(--acc);transform:translateY(-50%)"></span>
+    </span>
+    <span>204</span>
+    <span id="gauge-read" style="color:var(--acc);letter-spacing:.1em">000m</span>
+  </div>
+
+  <div id="minimap" style="position:fixed;right:max(9px,calc(var(--gut) - 50px));top:50%;transform:translateY(-50%);z-index:40;display:none;flex-direction:column;gap:5px;opacity:0;transition:opacity .4s ease"></div>
+
+  <div id="reticle" style="position:fixed;inset:0;z-index:110;pointer-events:none;display:none;mix-blend-mode:screen">
+    <div id="ret-h" style="position:absolute;left:0;right:0;top:0;height:1px;background:linear-gradient(90deg,transparent,rgba(79,227,224,.32),transparent)"></div>
+    <div id="ret-v" style="position:absolute;top:0;bottom:0;left:0;width:1px;background:linear-gradient(180deg,transparent,rgba(79,227,224,.32),transparent)"></div>
+    <div id="ret-box" style="position:absolute;width:26px;height:26px;border:1px solid rgba(79,227,224,.5);transform:translate(-50%,-50%)"></div>
+    <div id="ret-txt" style="position:absolute;font-family:var(--mono);font-size:9px;letter-spacing:.14em;color:rgba(79,227,224,.75);transform:translate(18px,16px)"></div>
+  </div>
+
+  <div id="shortcuts" style="position:fixed;inset:0;z-index:130;display:none;align-items:center;justify-content:center;background:rgba(3,5,8,.78);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)">
+    <div style="width:min(430px,92vw);border:1px solid var(--line);background:rgba(9,13,18,.97);padding:26px 26px 22px;box-shadow:0 40px 110px rgba(0,0,0,.7)">
+      <div style="font-family:var(--mono);font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:var(--acc);margin-bottom:18px">Controls</div>
+      <div style="display:grid;gap:11px;font-family:var(--mono);font-size:11px;letter-spacing:.08em;color:var(--ash)">
+        <div style="display:flex;justify-content:space-between;gap:16px"><span>Jump palette</span><b style="color:var(--chalk);font-weight:400">⌘K</b></div>
+        <div style="display:flex;justify-content:space-between;gap:16px"><span>Next / previous unit</span><b style="color:var(--chalk);font-weight:400">J / K</b></div>
+        <div style="display:flex;justify-content:space-between;gap:16px"><span>Open or close a dossier</span><b style="color:var(--chalk);font-weight:400">Enter</b></div>
+        <div style="display:flex;justify-content:space-between;gap:16px"><span>Expand / collapse all</span><b style="color:var(--chalk);font-weight:400">E</b></div>
+        <div style="display:flex;justify-content:space-between;gap:16px"><span>Top of section</span><b style="color:var(--chalk);font-weight:400">G</b></div>
+        <div style="display:flex;justify-content:space-between;gap:16px"><span>This panel</span><b style="color:var(--chalk);font-weight:400">?</b></div>
+      </div>
+      <div style="margin-top:20px;padding-top:14px;border-top:1px solid var(--line2);font-family:var(--mono);font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--dim)">Esc to close</div>
+    </div>
+  </div>
+
+  <div id="palette" style="position:fixed;inset:0;z-index:120;display:none;align-items:flex-start;justify-content:center;padding-top:13vh;background:rgba(3,5,8,.74);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)">
+    <div style="width:min(580px,92vw);border:1px solid var(--line);background:rgba(9,13,18,.97);box-shadow:0 40px 110px rgba(0,0,0,.7)">
+      <div style="display:flex;align-items:center;gap:11px;padding:15px 18px;border-bottom:1px solid var(--line2)">
+        <span style="color:var(--acc);font-family:var(--mono);font-size:12px">&gt;</span>
+        <input id="palette-input" placeholder="Jump to a unit, law, or section…" style="flex:1;font-family:var(--mono);font-size:13px;color:var(--chalk)">
+        <span style="font-family:var(--mono);font-size:9px;letter-spacing:.16em;color:var(--dim);border:1px solid var(--line);padding:3px 7px">ESC</span>
+      </div>
+      <div id="palette-list" style="max-height:46vh;overflow:auto"></div>
+    </div>
+  </div>
+
+  <div id="hud-grid" style="position:fixed;inset:0;z-index:0;pointer-events:none;background-image:linear-gradient(rgba(150,190,220,.055) 1px,transparent 1px),linear-gradient(90deg,rgba(150,190,220,.055) 1px,transparent 1px);background-size:120px 120px,120px 120px;mask-image:radial-gradient(120% 80% at 50% 0%,#000 0%,transparent 78%);-webkit-mask-image:radial-gradient(120% 80% at 50% 0%,#000 0%,transparent 78%);animation:driftgrid 40s linear infinite"></div>
+  <div style="position:fixed;inset:0;z-index:0;pointer-events:none;background:radial-gradient(70% 50% at 18% -10%,rgba(79,227,224,.16),transparent 65%),radial-gradient(60% 45% at 92% 12%,rgba(232,169,79,.10),transparent 62%),radial-gradient(90% 60% at 50% 110%,rgba(74,103,134,.16),transparent 70%)"></div>
+  <div id="hud-grain" style="position:fixed;inset:0;z-index:99;pointer-events:none;opacity:.3;mix-blend-mode:overlay;background-image:url(&quot;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.82' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.3'/%3E%3C/svg%3E&quot;)"></div>
+
+  <nav style="position:fixed;top:0;left:0;right:0;z-index:60;display:flex;align-items:center;gap:18px;padding:12px var(--gut);background:rgba(5,7,10,.82);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border-bottom:1px solid var(--line2)">
+    <a href="#top" style="display:flex;align-items:center;gap:9px;flex-shrink:0">
+      <span style="width:9px;height:9px;border-radius:50%;background:var(--acc);box-shadow:0 0 10px var(--acc);animation:pulse 2.4s ease-in-out infinite;flex-shrink:0"></span>
+      <span style="font-family:var(--display);font-weight:700;font-size:14px;letter-spacing:.2em;text-transform:uppercase">SCARP<span style="color:var(--acc)">LINE</span></span>
+    </a>
+    <div style="display:none;align-items:center;gap:8px;font-family:var(--mono);font-size:10px;letter-spacing:.16em;color:var(--dim);text-transform:uppercase" data-wide="1">
+      <span style="width:1px;height:16px;background:var(--line)"></span>
+      <span>DEPTH</span>
+      <span style="color:var(--acc);font-weight:500">{{ depth }}</span>
+      <span>M</span>
+      <span style="position:relative;display:block;width:74px;height:2px;background:var(--line);overflow:hidden">
+        <span ref="{{ barRef }}" style="position:absolute;left:0;top:0;bottom:0;width:0%;background:linear-gradient(90deg,var(--acc),var(--acc2));box-shadow:0 0 8px var(--accSoft)"></span>
+      </span>
+    </div>
+    <div style="margin-left:auto;display:flex;gap:20px;overflow-x:auto;font-family:var(--mono);font-size:10.5px;letter-spacing:.15em;text-transform:uppercase;color:var(--ash);scrollbar-width:none">
+      <a href="#section" style="white-space:nowrap;padding:4px 0;transition:color .2s" style-hover="color:var(--acc)">Section</a>
+      <a href="#units" style="white-space:nowrap;padding:4px 0;transition:color .2s" style-hover="color:var(--acc)">Units</a>
+      <a href="#laws" style="white-space:nowrap;padding:4px 0;transition:color .2s" style-hover="color:var(--acc)">Laws</a>
+      <a href="#key" style="white-space:nowrap;padding:4px 0;transition:color .2s" style-hover="color:var(--acc)">Depth key</a>
+      <a href="#team" style="white-space:nowrap;padding:4px 0;transition:color .2s" style-hover="color:var(--acc)">Team</a>
+      <a href="#contact" style="white-space:nowrap;padding:4px 0;transition:color .2s" style-hover="color:var(--acc)">Contact</a>
+    </div>
+    <span id="clock" data-wide="1" style="display:none;align-items:center;gap:9px;flex-shrink:0;font-family:var(--mono);font-size:10px;letter-spacing:.14em;color:var(--dim)"></span>
+    <button id="palette-open" style="flex-shrink:0;display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--ash);background:rgba(255,255,255,.03);border:1px solid var(--line);padding:7px 11px;cursor:pointer;transition:border-color .25s,color .25s" style-hover="border-color:var(--accSoft);color:var(--acc)">
+      <span>Jump</span>
+      <span style="color:var(--dim)">⌘K</span>
+    </button>
+  </nav>
+
+  <header id="top" data-screen-label="Hero" style="position:relative;z-index:1;min-height:100svh;display:flex;flex-direction:column;justify-content:center;padding:132px var(--gut) 44px">
+    <div style="display:flex;align-items:center;gap:13px;flex-wrap:wrap;font-family:var(--mono);font-size:10.5px;letter-spacing:.32em;text-transform:uppercase;color:var(--ash);margin-bottom:26px;animation:rise .9s .1s cubic-bezier(.16,1,.3,1) both">
+      <span style="width:44px;height:1px;background:linear-gradient(90deg,var(--acc),transparent)"></span>
+      <span>Official Records</span>
+      <span style="color:var(--dim)">/</span>
+      <span>Est. 2026</span>
+      <span style="display:inline-block;width:7px;height:13px;background:var(--acc);animation:pulse 1.1s steps(2,end) infinite"></span>
+    </div>
+
+    <h1 style="font-family:var(--display);font-weight:700;font-size:clamp(52px,15vw,232px);line-height:.82;letter-spacing:-.045em;text-transform:uppercase;background-image:linear-gradient(112deg,#EAF2F6 0%,#4FE3E0 26%,#8FB6C9 48%,#E8A94F 70%,#5C7FA6 88%,#1A222B 100%);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 0 42px rgba(79,227,224,.22));animation:settle 1.4s cubic-bezier(.16,1,.3,1) both">Scarpline</h1>
+
+    <p style="font-family:var(--display);font-weight:400;font-size:clamp(18px,3.2vw,34px);letter-spacing:-.02em;color:#9AA7B4;margin-top:20px;animation:rise 1s .45s cubic-bezier(.16,1,.3,1) both">where the layers show</p>
+
+    <p style="max-width:60ch;margin-top:22px;color:var(--ash);font-size:clamp(14.5px,1.6vw,17.5px);text-wrap:pretty;animation:rise 1s .6s cubic-bezier(.16,1,.3,1) both">A scarp is the cut face of a ridge — the one place the strata are exposed and the whole history can be read at once. <strong style="color:var(--chalk);font-weight:500">Everything here is built the same way:</strong> from inside its subject, with the working shown. Software, publications, books, and sport analysis, logged by depth.</p>
+
+    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:32px;animation:rise 1s .75s cubic-bezier(.16,1,.3,1) both">
+      <a href="#units" style="font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;padding:9px 16px;border:1px solid var(--accSoft);color:#05070A;background:var(--acc);transition:box-shadow .25s,transform .25s" style-hover="box-shadow:0 0 26px var(--accSoft);transform:translateY(-1px);color:#05070A">Ten units</a>
+      <a href="#laws" style="font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;padding:9px 16px;border:1px solid var(--line);color:var(--ash);transition:border-color .25s,color .25s,background .25s" style-hover="border-color:var(--accSoft);color:var(--acc);background:rgba(79,227,224,.06)">The Laws</a>
+      <a href="#key" style="font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;padding:9px 16px;border:1px solid var(--line);color:var(--ash);transition:border-color .25s,color .25s,background .25s" style-hover="border-color:var(--accSoft);color:var(--acc);background:rgba(79,227,224,.06)">Depth key</a>
+      <a href="#team" style="font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;padding:9px 16px;border:1px solid var(--line);color:var(--ash);transition:border-color .25s,color .25s,background .25s" style-hover="border-color:var(--accSoft);color:var(--acc);background:rgba(79,227,224,.06)">Team</a>
+    </div>
+
+    <div style="margin-top:auto;padding-top:48px;display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1px;background:var(--line2);border:1px solid var(--line2);animation:rise 1s .9s cubic-bezier(.16,1,.3,1) both">
+      <div style="background:var(--bg);padding:16px 18px">
+        <div style="font-family:var(--mono);font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--dim)">Surface</div>
+        <div style="font-family:var(--mono);font-size:19px;font-weight:500;color:var(--chalk);margin-top:6px">000 m</div>
+      </div>
+      <div style="background:var(--bg);padding:16px 18px">
+        <div style="font-family:var(--mono);font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--dim)">Basement</div>
+        <div style="font-family:var(--mono);font-size:19px;font-weight:500;color:var(--acc);margin-top:6px">204 m</div>
+      </div>
+      <div style="background:var(--bg);padding:16px 18px">
+        <div style="font-family:var(--mono);font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--dim)">Units logged</div>
+        <div style="font-family:var(--mono);font-size:19px;font-weight:500;color:var(--chalk);margin-top:6px">10</div>
+      </div>
+      <div style="background:var(--bg);padding:16px 18px;display:flex;align-items:center;justify-content:space-between;gap:12px">
+        <div>
+          <div style="font-family:var(--mono);font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--dim)">Descend</div>
+          <div style="font-family:var(--mono);font-size:19px;font-weight:500;color:var(--acc2);margin-top:6px">↓</div>
+        </div>
+        <span style="position:relative;display:block;width:1px;height:34px;background:var(--line);overflow:hidden">
+          <span style="position:absolute;left:0;top:0;width:1px;height:12px;background:var(--acc);box-shadow:0 0 8px var(--acc);animation:drop 2.4s ease-in-out infinite"></span>
+        </span>
+      </div>
+    </div>
+
+    <div style="margin-top:12px;display:flex;align-items:center;gap:14px;border:1px solid var(--line2);background:rgba(10,14,19,.5);overflow:hidden;animation:rise 1s 1.05s cubic-bezier(.16,1,.3,1) both">
+      <span style="flex-shrink:0;font-family:var(--mono);font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;color:#05070A;background:var(--acc);padding:8px 12px">Live log</span>
+      <div style="flex:1;overflow:hidden;position:relative;height:34px">
+        <div id="ticker" style="position:absolute;top:0;left:0;display:flex;align-items:center;height:34px;white-space:nowrap;font-family:var(--mono);font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--ash);animation:marquee 38s linear infinite"></div>
+      </div>
+    </div>
+  </header>
+
+  <section id="section" data-screen-label="The Section" style="position:relative;z-index:1;padding:clamp(66px,10vw,124px) var(--gut);border-top:1px solid var(--line2)">
+    <div style="display:grid;grid-template-columns:var(--rail) 1fr;gap:0;margin-bottom:clamp(30px,4.5vw,52px)">
+      <div style="font-family:var(--mono);font-size:10.5px;letter-spacing:.18em;color:var(--acc);padding-top:11px">§ 01</div>
+      <div>
+        <h2 style="font-family:var(--display);font-weight:600;font-size:clamp(30px,5.2vw,58px);letter-spacing:-.035em;line-height:1.02">The Section</h2>
+        <p style="max-width:64ch;margin-top:14px;color:var(--ash);font-size:clamp(14.5px,1.6vw,16.5px);text-wrap:pretty">What this is, and the one thing that makes it different from everything adjacent to it.</p>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:var(--rail) 1fr">
+      <div></div>
+      <div style="max-width:64ch" data-reveal>
+        <p style="font-size:clamp(17px,2vw,23px);line-height:1.55;color:#A9B5C1;text-wrap:pretty">Most writing about sport is done from the surface — by people describing a thing they have never done at speed, under pressure, on the day it counted.</p>
+        <p style="margin-top:20px;font-size:clamp(14.5px,1.6vw,16.5px);color:var(--ash);text-wrap:pretty">Scarpline is the other approach. Every unit below is built from inside its subject: swimming written by someone who races it at regional and international level, software built by the person who needed it to exist, books written rather than assembled. <strong style="color:var(--chalk);font-weight:500">The units are ordered by depth</strong> — how long each has been forming — not by how loudly it announces itself. Recent work sits near the surface. The slow work sits in the basement, where it belongs.</p>
+        <p style="margin-top:20px;font-size:clamp(14.5px,1.6vw,16.5px);color:var(--ash);text-wrap:pretty">Nothing here claims to be finished. A section is a record of what has accumulated so far.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="units" data-screen-label="Units" style="position:relative;z-index:1;padding:clamp(66px,10vw,124px) var(--gut);border-top:1px solid var(--line2)">
+    <div style="display:grid;grid-template-columns:var(--rail) 1fr;gap:0;margin-bottom:clamp(26px,4vw,44px)">
+      <div style="font-family:var(--mono);font-size:10.5px;letter-spacing:.18em;color:var(--acc);padding-top:11px">§ 02</div>
+      <div>
+        <h2 style="font-family:var(--display);font-weight:600;font-size:clamp(30px,5.2vw,58px);letter-spacing:-.035em;line-height:1.02">Ten Units, Logged</h2>
+        <p style="max-width:66ch;margin-top:14px;color:var(--ash);font-size:clamp(14.5px,1.6vw,16.5px);text-wrap:pretty">Each unit is a distinct body of work with its own materials, its own audience, and its own reason to exist. <b style="color:#9AA7B4;font-weight:500">Status is recorded honestly</b> — built, forming, planned, or open for work. Nothing is described as finished that isn't.</p>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:var(--rail) 1fr;padding-bottom:11px;border-bottom:1px solid var(--line);font-family:var(--mono);font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--dim)">
+      <div>Depth</div>
+      <div style="display:flex;justify-content:space-between;gap:14px;align-items:center"><span>Unit</span>
+        <span style="display:flex;align-items:center;gap:14px">
+          <button id="expand-all" style="font-family:var(--mono);font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--acc);background:none;border:1px solid var(--line);padding:5px 10px;cursor:pointer;transition:background .25s" style-hover="background:rgba(79,227,224,.09)">Expand all</button>
+          <span>Status</span>
+        </span>
+      </div>
+    </div>
+
+    <article data-reveal style="--band:#8FB6C9;position:relative;display:grid;grid-template-columns:var(--rail) 1fr;border-bottom:1px solid var(--line2);transition:background .35s ease" style-hover="background:rgba(255,255,255,.018)">
+      <div style="position:absolute;left:calc(var(--rail) - 30px);top:0;bottom:0;width:5px;background:var(--band);opacity:.8;box-shadow:0 0 18px var(--band)"></div>
+      <div style="font-family:var(--mono);font-size:11px;color:var(--ash);padding:30px 0;letter-spacing:.06em">012 m<em style="display:block;font-style:normal;color:var(--dim);font-size:9.5px;margin-top:6px;letter-spacing:.18em;text-transform:uppercase">Recent</em></div>
+      <div style="padding:30px 0 36px 30px">
+        <div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap">
+          <span style="font-family:var(--mono);font-size:10.5px;color:var(--band);letter-spacing:.12em">01</span>
+          <h3 style="font-family:var(--display);font-weight:600;font-size:clamp(23px,3.2vw,37px);letter-spacing:-.03em;line-height:1">Jarvis</h3>
+          <span style="font-family:var(--mono);font-size:10px;letter-spacing:.17em;text-transform:uppercase;color:var(--dim)">Interface</span>
+          <span style="margin-left:auto;font-family:var(--mono);font-size:9.5px;letter-spacing:.17em;text-transform:uppercase;padding:4px 11px;border:1px solid currentColor;border-radius:99px;white-space:nowrap;color:#4FE3B0">Built</span>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:15px">
+          <span style="font-family:var(--mono);font-size:9.5px;letter-spacing:.11em;text-transform:uppercase;padding:5px 10px;background:var(--panel);border:1px solid var(--line2);color:var(--ash)">Voice-driven</span>
+          <span style="font-family:var(--mono);font-size:9.5px;letter-spacing:.11em;text-transform:uppercase;padding:5px 10px;background:var(--panel);border:1px solid var(--line2);color:var(--ash)">Three personas</span>
+          <span style="font-family:var(--mono);font-size:9.5px;letter-spacing:.11em;text-transform:uppercase;padding:5px 10px;background:var(--panel);border:1px solid var(--line2);color:var(--ash)">Hands-free</span>
+          <span style="font-family:var(--mono);font-size:9.5px;letter-spacing:.11em;text-transform:uppercase;padding:5px 10px;background:var(--panel);border:1px solid var(--line2);color:var(--ash)">Light / Heavy tiers</span>
+        </div>
+        <div style="display:grid;gap:18px;margin-top:22px;max-width:70ch">
+          <div>
+            <h4 style="font-family:var(--mono);font-weight:500;font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--band);margin-bottom:7px">What it is</h4>
+            <p style="color:var(--ash);font-size:15px;text-wrap:pretty">A command interface you talk to. Three personas share one model but hold the conversation differently. A live radar, an orb that responds to speech, and a microphone with three deliberate states — open, standby, and released — so the recording light actually goes out when you hand the mic back.</p>
+          </div>
+          <div>
+            <h4 style="font-family:var(--mono);font-weight:500;font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--band);margin-bottom:7px">How it works</h4>
+            <p style="color:var(--ash);font-size:15px;text-wrap:pretty"><b style="color:#9AA7B4;font-weight:500">Light tier</b> answers quickly. <b style="color:#9AA7B4;font-weight:500">Heavy tier</b> is for deep work — the interface darkens, output ceilings rise, and it's instructed to deliver complete files rather than truncate silently. It searches the live web, draws 3D blueprints you can orbit and export as <b style="color:#9AA7B4;font-weight:500">.obj</b>, pulls weather, and opens real installed apps by URL scheme.</p>
+          </div>
+          <div>
+            <h4 style="font-family:var(--mono);font-weight:500;font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--band);margin-bottom:7px">The detail worth knowing</h4>
+            <p style="color:var(--ash);font-size:15px;text-wrap:pretty">Interruption is a first-class feature. A button, a tap on the orb, the Escape key, or simply saying stop will cut the voice mid-word and <b style="color:#9AA7B4;font-weight:500">abort the request in flight</b> so it isn't burning tokens. Pause holds instead of cancelling, and resumes exactly where it stopped.</p>
+          </div>
+        </div>
+        <div style="margin-top:20px;padding-top:14px;border-top:1px dashed var(--line2);font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;color:var(--dim)"><b style="color:var(--ash);font-weight:400">Records:</b> deployed · relay function required · spend limit strongly advised</div>
+      </div>
+    </article>
+
+    <article data-reveal style="--band:#B9A98F;position:relative;display:grid;grid-template-columns:var(--rail) 1fr;border-bottom:1px solid var(--line2);transition:background .35s ease" style-hover="background:rgba(255,255,255,.018)">
+      <div style="position:absolute;left:calc(var(--rail) - 30px);top:0;bottom:0;width:5px;background:var(--band);opacity:.8;box-shadow:0 0 18px var(--band)"></div>
+      <div style="font-family:var(--mono);font-size:11px;color:var(--ash);padding:30px 0;letter-spacing:.06em">024 m<em style="display:block;font-style:normal;color:var(--dim);font-size:9.5px;margin-top:6px;letter-spacing:.18em;text-transform:uppercase">Recent</em></div>
+      <div style="padding:30px 0 36px 30px">
+        <div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap">
+          <span style="font-family:var(--mono);font-size:10.5px;color:var(--band);letter-spacing:.12em">02</span>
+          <h3 style="font-family:var(--display);font-weight:600;font-size:clamp(23px,3.2vw,37px);letter-spacing:-.03em;line-height:1">The Forge</h3>
+          <span style="font-family:var(--mono);font-size:10px;letter-spacing:.17em;text-transform:uppercase;color:var(--dim)">Engine</span>
+          <span style="margin-left:auto;font-family:var(--mono);font-size:9.5px;letter-spacing:.17em;text-transform:uppercase;padding:4px 11px;border:1px solid currentColor;border-radius:99px;white-space:nowrap;color:#4FE3B0">Built</span>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:15px">
+          <span style="font-family:var(--mono);font-size:9.5px;letter-spacing:.11em;text-transform:uppercase;padding:5px 10px;background:var(--panel);border:1px solid var(--line2);color:var(--ash)">Long-work engine</span>
+          <span style="font-family:var(--mono);font-size:9.5px;letter-spacing:.11em;text-transform:uppercase;padding:5px 10px;background:var(--panel);border:1px solid var(--line2);color:var(--ash)">200,000 char ceiling</span>
+          <span style="font-family:var(--mono);font-size:9.5px;letter-spacing:.11em;text-transform:uppercase;padding:5px 10px;background:var(--panel);border:1px solid var(--line2);color:var(--ash)">60 parts max</span>
+          <span style="font-family:var(--mono);font-size:9.5px;letter-spacing:.11em;text-transform:uppercase;padding:5px 10px;background:var(--panel);border:1px solid var(--line2);color:var(--ash)">Self-calibrating</span>
+        </div>
+        <div style="display:grid;gap:18px;margin-top:22px;max-width:70ch">
+          <div>
+            <h4 style="font-family:var(--mono);font-weight:500;font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--band);margin-bottom:7px">The problem it solves</h4>
+            <p style="color:var(--ash);font-size:15px;text-wrap:pretty">No single model response can hold a book. Every model has a per-reply ceiling, so a request for a whole novel gets cut off mid-sentence and pretends it didn't. Any tool claiming otherwise is chaining calls behind the scenes without telling you.</p>
+          </div>
+          <div>
+            <h4 style="font-family:var(--mono);font-weight:500;font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--band);margin-bottom:7px">How it works</h4>
+            <p style="color:var(--ash);font-size:15px;text-wrap:pretty">It writes the way a person does — plans a chapter outline, then writes part after part, stitching them into one continuous document. It does not resend the growing manuscript on every call; only the outline plus the tail of what it just wrote. <b style="color:#9AA7B4;font-weight:500">The seams stay invisible and the cost stops ballooning</b> as the book grows.</p>
+          </div>
+          <div>
+            <h4 style="font-family:var(--mono);font-weight:500;font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--band);margin-bottom:7px">The detail worth knowing</h4>
+            <p style="color:var(--ash);font-size:15px;text-wrap:pretty">It discovers its own ceiling. If the account rejects a part as too large, it <b style="color:#9AA7B4;font-weight:500">halves the budget and continues</b> rather than dying. Tested against a simulated rejection: it recovered to a working budget and finished cleanly.</p>
+          </div>
+        </div>
+        <div style="margin-top:20px;padding-top:14px;border-top:1px dashed var(--line2);font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;color:var(--dim)"><b style="color:var(--ash);font-weight:400">Honest note:</b> chapters are naturally independent, so prose forges well. Long codebases depend on cross-references a part-by-part writer loses track of — review those module by module.</div>
+      </div>
+    </article>
+
+    <article data-reveal style="--band:#E8A94F;position:relative;display:grid;grid-template-columns:var(--rail) 1fr;border-bottom:1px solid var(--line2);transition:background .35s ease" style-hover="background:rgba(255,255,255,.018)">
+      <div style="position:absolute;left:calc(var(--rail) - 30px);top:0;bottom:0;width:5px;background:var(--band);opacity:.8;box-shadow:0 0 18px var(--band)"></div>
+      <div style="font-family:var(--mono);font-size:11px;color:var(--ash);padding:30px 0;letter-spacing:.06em">041 m<em style="display:block;font-style:normal;color:var(--dim);font-size:9.5px;margin-top:6px;letter-spacing:.18em;text-transform:uppercase">Forming</em></div>
+      <div style="padding:30px 0 36px 30px">
+        <div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap">
+          <span style="font-family:var(--mono);font-size:10.5px;color:var(--band);letter-spacing:.12em">03</span>
+          <h3 style="font-family:var(--display);font-weight:600;font-size:clamp(23px,3.2vw,37px);letter-spacing:-.03em;line-height:1">Streamlyne</h3>
+          <span style="font-family:var(--mono);font-size:10px;letter-spacing:.17em;text-transform:uppercase;color:var(--dim)">Publication — Swimming</span>
+          <span style="margin-left:auto;font-family:var(--mono);font-size:9.5px;letter-spacing:.17em;text-transform:uppercase;padding:4px 11px;border:1px solid currentColor;border-radius:99px;white-space:nowrap;color:var(--acc2)">In progress</span>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:15px">
+          <span style="font-family:var(--mono);font-size:9.5px;letter-spacing:.11em;text-transform:uppercase;padding:5px 10px;background:var(--panel);border:1px solid var(--line2);color:var(--ash)">Written from inside</span>
+          <span style="font-family:var(--mono);font-size:9.5px;letter-spacing:.11em;text-transform:uppercase;padding:5px 10px;background:var(--panel);border:1px solid var(--line2);color:var(--ash)">Race analysis</span>
+          <span style="font-family:var(--mono);font-size:9.5px;letter-spacing:.11em;text-transform:uppercase;padding:5px 10px;background:var(--panel);border:1px solid var(--line2);color:var(--ash)">Taper logs</span>
+          <span style="font-family:var(--mono);font-size:9.5px;letter-spacing:.11em;text-transform:uppercase;padding:5px 10px;background:var(--panel);border:1px solid var(--line2);color:var(--ash)">Technique video</span>
+        </div>
+        <div style="display:grid;gap:18px;margin-top:22px;max-width:70ch">
+          <div>
+            <h4 style="font-family:var(--mono);font-weight:500;font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--band);margin-bottom:7px">What it is</h4>
+            <p style="color:var(--ash);font-size:15px;text-wrap:pretty">Swimming written by someone who swims it. Taper logs including the middle weeks that feel terrible. What a coach actually changed in a stroke and the split it produced. The ninety minutes before a final. Race analysis of real swims, with the footage.</p>
+          </div>
+          <div>
+            <h4 style="font-family:var(--mono);font-weight:500;font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--band);margin-bottom:7px">What it is not</h4>
+            <p style="color:var(--ash);font-size:15px;text-wrap:pretty">Ten tips for better freestyle. That page exists ten thousand times and every version was written by someone who has never held a taper. <b style="color:#9AA7B4;font-weight:500">If a fitness blogger could have written it, it doesn't go here.</b></p>
+          </div>
+          <div>
+            <h4 style="font-family:var(--mono);font-weight:500;font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--band);margin-bottom:7px">Method</h4>
+            <p style="color:var(--ash);font-size:15px;text-wrap:pretty">Search-targeted pieces answer the question in the first two sentences — mobile readers leave when the answer is buried under an anecdote. Insider pieces don't chase rankings; they exist so a reader who arrives once decides to stay.</p>
+          </div>
+        </div>
+        <div style="margin-top:20px;padding-top:14px;border-top:1px dashed var(--line2);font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;color:var(--dim)"><b style="color:var(--ash);font-weight:400">Records:</b> name cleared preliminary trademark search · Classes 41 &amp; 9 pending verification</div>
+      </div>
+    </article>
+
+    <article data-reveal style="--band:#C08A45;position:relative;display:grid;grid-template-columns:var(--rail) 1fr;border-bottom:1px solid var(--line2);transition:background .35s ease" style-hover="background:rgba(255,255,255,.018)">
+      <div style="position:absolute;left:calc(var(--rail) - 30px);top:0;bottom:0;width:5px;background:var(--band);opacity:.8;box-shadow:0 0 18px var(--band)"></div>
+      <div style="font-family:var(--mono);font-size:11px;color:var(--ash);padding:30px 0;letter-spacing:.06em">058 m<em style="display:block;font-style:normal;color:var(--dim);font-size:9.5px;margin-top:6px;letter-spacing:.18em;text-transform:uppercase">Forming</em></div>
+      <div style="padding:30px 0 36px 30px">
+        <div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap">
+          <span style="font-family:var(--mono);font-size:10.5px;color:var(--band);letter-spacing:.12em">04</span>
+          <h3 style="font-family:var(--display);font-weight:600;font-size:clamp(23px,3.2vw,37px);letter-spacing:-.03em;line-height:1">Splits</h3>
+          <span style="font-family:var(--mono);font-size:10px;letter-spacing:.17em;text-transform:uppercase;color:var(--dim)">Tools — Free</span>
+          <span style="margin-left:auto;font-family:var(--mono);font-size:9.5px;letter-spacing:.17em;text-transform:uppercase;padding:4px 11px;border:1px solid currentColor;border-radius:99px;white-space:nowrap;color:var(--acc2)">In progress</span>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:15px">
+          <span style="font-family:var(--mono);font-size:9.5px;letter-spacing:.11em;text-transform:uppercase;padding:5px 10px;background:var(--panel);border:1px solid var(--line2);color:var(--ash)">Free, no signup</span>
+          <span style="font-family:var(--mono);font-size:9.5px;letter-spacing:.11em;text-transform:uppercase;padding:5px 10px;background:var(--panel);border:1px solid var(--line2);color:var(--ash)">Yards ↔ metres</span>
+          <span style="font-family:var(--mono);font-size:9.5px;letter-spacing:.11em;text-transform:uppercase;padding:5px 10px;background:var(--panel);border:1px solid var(--line2);color:var(--ash)">Shareable URLs</span>
+          <span style="font-family:var(--mono);font-size:9.5px;letter-spacing:.11em;text-transform:uppercase;padding:5px 10px;background:var(--panel);border:1px solid var(--line2);color:var(--ash)">Wet-hands tested</span>
+        </div>
+        <div style="display:grid;gap:18px;margin-top:22px;max-width:70ch">
+          <div>
+            <h4 style="font-family:var(--mono);font-weight:500;font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--band);margin-bottom:7px">What it is</h4>
+            <p style="color:var(--ash);font-size:15px;text-wrap:pretty">Pace and interval calculators built for the one place they get used: a wet phone on a pool deck between sets. Convert across distances and units, generate sets from a target pace and rest interval, and work out the per-50 splits a goal time actually demands.</p>
+          </div>
+          <div>
+            <h4 style="font-family:var(--mono);font-weight:500;font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--band);margin-bottom:7px">Constraints, non-negotiable</h4>
+            <p style="color:var(--ash);font-size:15px;text-wrap:pretty">Free with no signup — a wall would destroy the search traffic the tool exists to catch. Large tap targets. No page reloads, no spinners; it calculates on input. <b style="color:#9AA7B4;font-weight:500">Every calculation gets its own URL</b>, so a swimmer sharing a set with a teammate builds a link back without being asked.</p>
+          </div>
+          <div>
+            <h4 style="font-family:var(--mono);font-weight:500;font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--band);margin-bottom:7px">Queued behind it</h4>
+            <p style="color:var(--ash);font-size:15px;text-wrap:pretty">SWOLF calculator, taper countdown, meet split predictor, training volume tracker — in that order, built only once the first one is genuinely being used.</p>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <article data-reveal style="--band:#E0604A;position:relative;display:grid;grid-template-columns:var(--rail) 1fr;border-bottom:1px solid var(--line2);transition:background .35s ease" style-hover="background:rgba(255,255,255,.018)">
+      <div style="position:absolute;left:calc(var(--rail) - 30px);top:0;bottom:0;width:5px;background:var(--band);opacity:.8;box-shadow:0 0 18px var(--band)"></div>
+      <div style="font-family:var(--mono);font-size:11px;color:var(--ash);padding:30px 0;letter-spacing:.06em">076 m<em style="display:block;font-style:normal;color:var(--dim);font-size:9.5px;margin-top:6px;letter-spacing:.18em;text-transform:uppercase">Bedded</em></div>
+      <div style="padding:30px 0 36px 30px">
+        <div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap">
+          <span style="font-family:var(--mono);font-size:10.5px;color:var(--band);letter-spacing:.12em">05</span>
+          <h3 style="font-family:var(--display);font-weight:600;font-size:clamp(23px,3.2vw,37px);letter-spacing:-.03em;line-height:1">Books</h3>
+          <span style="font-family:var(--mono);font-size:10px;letter-spacing:.17em;text-transform:uppercase;color:var(--dim)">Publishing</span>
+          <span style="margin-left:auto;font-family:var(--mono);font-size:9.5px;letter-spacing:.17em;text-transform:uppercase;padding:4px 11px;border:1px solid currentColor;border-radius:99px;white-space:nowrap;color:var(--acc2)">In progress</span>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:15px">
+          <span style="font-family:var(--mono);font-size:9.5px;letter-spacing:.11em;text-transform:uppercase;padding:5px 10px;background:var(--panel);border:1px solid var(--line2);color:var(--ash)">The Forbidden Scales</span>
+          <span style="font-family:var(--mono);font-size:9.5px;letter-spacing:.11em;text-transform:uppercase;padding:5px 10px;background:var(--panel);border:1px solid var(--line2);color:var(--ash)">20 main volumes</span>
+          <span style="font-family:var(--mono);font-size:9.5px;letter-spacing:.11em;text-transform:uppercase;padding:5px 10px;background:var(--panel);border:1px solid var(--line2);color:var(--ash)">15 special stories</span>
+          <span style="font-family:var(--mono);font-size:9.5px;letter-spacing:.11em;text-transform:uppercase;padding:5px 10px;background:var(--panel);border:1px solid var(--line2);color:var(--ash)">Four authors</span>
+        </div>
+        <div style="display:grid;gap:18px;margin-top:22px;max-width:70ch">
+          <div>
+            <h4 style="font-family:var(--mono);font-weight:500;font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--band);margin-bottom:7px">The first title</h4>
+            <p style="color:var(--ash);font-size:15px;text-wrap:pretty"><b style="color:#9AA7B4;font-weight:500">The Forbidden Scales</b> — an epic dragon saga of loyalty, ancient power, and the bonds forged between unlikely companions. Twenty main volumes and fifteen companion stories, written by four voices in one world. Each author owns their dragon, their companion, and their corner of the story.</p>
+          </div>
+          <div>
+            <h4 style="font-family:var(--mono);font-weight:500;font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--band);margin-bottom:7px">Why it holds together</h4>
+            <p style="color:var(--ash);font-size:15px;text-wrap:pretty">Thirteen Shard bloodlines mapped across a Wheel of Correspondence, where every opposition is reasoned rather than decorative — Wind against Crystal is mobility against durability, and the tactical consequence follows. <b style="color:#9AA7B4;font-weight:500">The Galaxy Shard sits outside the Wheel entirely,</b> appearing not as a chosen one but as a correction when the system stops turning.</p>
+          </div>
+          <div>
+            <h4 style="font-family:var(--mono);font-weight:500;font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--band);margin-bottom:7px">The constraint that keeps it honest</h4>
+            <p style="color:var(--ash);font-size:15px;text-wrap:pretty">The project runs on written-down Laws — no omnipotent characters, no wish-magic, body limits apply, four pages minimum per chapter. Rules set in advance are what separate worldbuilding that holds from worldbuilding that collapses in book six.</p>
+          </div>
+        </div>
+        <div style="margin-top:20px;padding-top:14px;border-top:1px dashed var(--line2);font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;color:var(--dim)"><b style="color:var(--ash);font-weight:400">Co-authored:</b> Elina Yoon · Daniel Lim · Raven Taylor · Varsha Gangu</div>
+      </div>
+    </article>
+
+    <article data-reveal style="--band:#B2503C;position:relative;display:grid;grid-template-columns:var(--rail) 1fr;border-bottom:1px solid var(--line2);transition:background .35s ease" style-hover="background:rgba(255,255,255,.018)">
+      <div style="position:absolute;left:calc(var(--rail) - 30px);top:0;bottom:0;width:5px;background:var(--band);opacity:.8;box-shadow:0 0 18px var(--band)"></div>
+      <div style="font-family:var(--mono);font-size:11px;color:var(--ash);padding:30px 0;letter-spacing:.06em">094 m<em style="display:block;font-style:normal;color:var(--dim);font-size:9.5px;margin-top:6px;letter-spacing:.18em;text-transform:uppercase">Bedded</em></div>
+      <div style="padding:30px 0 36px 30px">
+        <div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap">
+          <span style="font-family:var(--mono);font-size:10.5px;color:var(--band);letter-spacing:.12em">06</span>
+          <h3 style="font-family:var(--display);font-weight:600;font-size:clamp(23px,3.2vw,37px);letter-spacing:-.03em;line-height:1">Reviews</h3>
+          <span style="font-family:var(--mono);font-size:10px;letter-spacing:.17em;text-transform:uppercase;color:var(--dim)">Gear — Tested</span>
+          <span style="margin-left:auto;font-family:var(--mono);font-size:9.5px;letter-spacing:.17em;text-transform:uppercase;padding:4px 11px;border:1px solid currentColor;border-radius:99px;white-space:nowrap;color:var(--dim)">Planned</span>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:15px">
+          <span style="font-family:var(--mono);font-size:9.5px;letter-spacing:.11em;text-transform:uppercase;padding:5px 10px;background:var(--panel);border:1px solid var(--line2);color:var(--ash)">Trained in, not unboxed</span>
+          <span style="font-family:var(--mono);font-size:9.5px;letter-spacing:.11em;text-transform:uppercase;padding:5px 10px;background:var(--panel);border:1px solid var(--line2);color:var(--ash)">Disclosure at top</span>
+          <span style="font-family:var(--mono);font-size:9.5px;letter-spacing:.11em;text-transform:uppercase;padding:5px 10px;background:var(--panel);border:1px solid var(--line2);color:var(--ash)">Goggles · Suits · Watches</span>
+        </div>
+        <div style="display:grid;gap:18px;margin-top:22px;max-width:70ch">
+          <div>
+            <h4 style="font-family:var(--mono);font-weight:500;font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--band);margin-bottom:7px">The rule</h4>
+            <p style="color:var(--ash);font-size:15px;text-wrap:pretty">Nothing is reviewed that hasn't been swum in. Not worn once for a photograph — trained in, across a real block, in the conditions it's meant for. A swimmer can tell within two sentences whether the writer has actually used the goggles.</p>
+          </div>
+          <div>
+            <h4 style="font-family:var(--mono);font-weight:500;font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--band);margin-bottom:7px">On affiliate money</h4>
+            <p style="color:var(--ash);font-size:15px;text-wrap:pretty">Every affiliate relationship is disclosed <b style="color:#9AA7B4;font-weight:500">at the top of the page</b>, not buried in a footer. Legally required, but that isn't the reason — a sophisticated audience trusts transparent disclosure more than they trust silence, and the trust is the entire business.</p>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <article data-reveal style="--band:#8E6A55;position:relative;display:grid;grid-template-columns:var(--rail) 1fr;border-bottom:1px solid var(--line2);transition:background .35s ease" style-hover="background:rgba(255,255,255,.018)">
+      <div style="position:absolute;left:calc(var(--rail) - 30px);top:0;bottom:0;width:5px;background:var(--band);opacity:.8;box-shadow:0 0 18px var(--band)"></div>
+      <div style="font-family:var(--mono);font-size:11px;color:var(--ash);padding:30px 0;letter-spacing:.06em">118 m<em style="display:block;font-style:normal;color:var(--dim);font-size:9.5px;margin-top:6px;letter-spacing:.18em;text-transform:uppercase">Bedded</em></div>
+      <div style="padding:30px 0 36px 30px">
+        <div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap">
+          <span style="font-family:var(--mono);font-size:10.5px;color:var(--band);letter-spacing:.12em">07</span>
+          <h3 style="font-family:var(--display);font-weight:600;font-size:clamp(23px,3.2vw,37px);letter-spacing:-.03em;line-height:1">Cross Section</h3>
+          <span style="font-family:var(--mono);font-size:10px;letter-spacing:.17em;text-transform:uppercase;color:var(--dim)">Analysis — Multi-sport</span>
+          <span style="margin-left:auto;font-family:var(--mono);font-size:9.5px;letter-spacing:.17em;text-transform:uppercase;padding:4px 11px;border:1px solid currentColor;border-radius:99px;white-space:nowrap;color:var(--dim)">Planned</span>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:15px">
+          <span style="font-family:var(--mono);font-size:9.5px;letter-spacing:.11em;text-transform:uppercase;padding:5px 10px;background:var(--panel);border:1px solid var(--line2);color:var(--ash)">Sport logic</span>
+          <span style="font-family:var(--mono);font-size:9.5px;letter-spacing:.11em;text-transform:uppercase;padding:5px 10px;background:var(--panel);border:1px solid var(--line2);color:var(--ash)">Beyond swimming</span>
+          <span style="font-family:var(--mono);font-size:9.5px;letter-spacing:.11em;text-transform:uppercase;padding:5px 10px;background:var(--panel);border:1px solid var(--line2);color:var(--ash)">Numbers over folklore</span>
+        </div>
+        <div style="display:grid;gap:18px;margin-top:22px;max-width:70ch">
+          <div>
+            <h4 style="font-family:var(--mono);font-weight:500;font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--band);margin-bottom:7px">What it is</h4>
+            <p style="color:var(--ash);font-size:15px;text-wrap:pretty">The same method applied past swimming. Why a tactic works and under what conditions it stops working. What a split actually tells you versus what people say it tells you. Where received wisdom in a sport turns out to be inherited rather than tested.</p>
+          </div>
+          <div>
+            <h4 style="font-family:var(--mono);font-weight:500;font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--band);margin-bottom:7px">Why it exists separately</h4>
+            <p style="color:var(--ash);font-size:15px;text-wrap:pretty">Swimming is too small a market to be a ceiling. <b style="color:#9AA7B4;font-weight:500">Cross Section is the widening</b> — the unit that lets the method travel to sports where the audience is larger and the analysis is just as thin.</p>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <article data-reveal style="--band:#4FE3B0;position:relative;display:grid;grid-template-columns:var(--rail) 1fr;border-bottom:1px solid var(--line2);transition:background .35s ease" style-hover="background:rgba(255,255,255,.018)">
+      <div style="position:absolute;left:calc(var(--rail) - 30px);top:0;bottom:0;width:5px;background:var(--band);opacity:.8;box-shadow:0 0 18px var(--band)"></div>
+      <div style="font-family:var(--mono);font-size:11px;color:var(--ash);padding:30px 0;letter-spacing:.06em">142 m<em style="display:block;font-style:normal;color:var(--dim);font-size:9.5px;margin-top:6px;letter-spacing:.18em;text-transform:uppercase">Deep</em></div>
+      <div style="padding:30px 0 36px 30px">
+        <div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap">
+          <span style="font-family:var(--mono);font-size:10.5px;color:var(--band);letter-spacing:.12em">08</span>
+          <h3 style="font-family:var(--display);font-weight:600;font-size:clamp(23px,3.2vw,37px);letter-spacing:-.03em;line-height:1">Studio</h3>
+          <span style="font-family:var(--mono);font-size:10px;letter-spacing:.17em;text-transform:uppercase;color:var(--dim)">Client work</span>
+          <span style="margin-left:auto;font-family:var(--mono);font-size:9.5px;letter-spacing:.17em;text-transform:uppercase;padding:4px 11px;border:1px solid currentColor;border-radius:99px;white-space:nowrap;color:var(--acc)">Open</span>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:15px">
+          <span style="font-family:var(--mono);font-size:9.5px;letter-spacing:.11em;text-transform:uppercase;padding:5px 10px;background:var(--panel);border:1px solid var(--line2);color:var(--ash)">Taking work</span>
+          <span style="font-family:var(--mono);font-size:9.5px;letter-spacing:.11em;text-transform:uppercase;padding:5px 10px;background:var(--panel);border:1px solid var(--line2);color:var(--ash)">Clubs · Coaches · Teams</span>
+          <span style="font-family:var(--mono);font-size:9.5px;letter-spacing:.11em;text-transform:uppercase;padding:5px 10px;background:var(--panel);border:1px solid var(--line2);color:var(--ash)">You own it outright</span>
+        </div>
+        <div style="display:grid;gap:18px;margin-top:22px;max-width:70ch">
+          <div>
+            <h4 style="font-family:var(--mono);font-weight:500;font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--band);margin-bottom:7px">What it is</h4>
+            <p style="color:var(--ash);font-size:15px;text-wrap:pretty">Websites built for clubs, coaches, athletes, and teams. Fast, plain, mobile-first, and owned outright by whoever paid for them — no platform lock-in, no monthly ransom to keep your own pages online.</p>
+          </div>
+          <div>
+            <h4 style="font-family:var(--mono);font-weight:500;font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--band);margin-bottom:7px">Why it's on this list</h4>
+            <p style="color:var(--ash);font-size:15px;text-wrap:pretty">Every other unit here takes months or years before it returns anything. <b style="color:#9AA7B4;font-weight:500">Studio is the one that funds the wait.</b> It's listed honestly as client work rather than dressed up as a product.</p>
+          </div>
+        </div>
+        <div style="margin-top:20px;padding-top:14px;border-top:1px dashed var(--line2);font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;color:var(--dim)"><b style="color:var(--ash);font-weight:400">Status:</b> currently accepting a small number of projects</div>
+      </div>
+    </article>
+
+    <article data-reveal style="--band:#3E7EA8;position:relative;display:grid;grid-template-columns:var(--rail) 1fr;border-bottom:1px solid var(--line2);transition:background .35s ease" style-hover="background:rgba(255,255,255,.018)">
+      <div style="position:absolute;left:calc(var(--rail) - 30px);top:0;bottom:0;width:5px;background:var(--band);opacity:.8;box-shadow:0 0 18px var(--band)"></div>
+      <div style="font-family:var(--mono);font-size:11px;color:var(--ash);padding:30px 0;letter-spacing:.06em">168 m<em style="display:block;font-style:normal;color:var(--dim);font-size:9.5px;margin-top:6px;letter-spacing:.18em;text-transform:uppercase">Deep</em></div>
+      <div style="padding:30px 0 36px 30px">
+        <div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap">
+          <span style="font-family:var(--mono);font-size:10.5px;color:var(--band);letter-spacing:.12em">09</span>
+          <h3 style="font-family:var(--display);font-weight:600;font-size:clamp(23px,3.2vw,37px);letter-spacing:-.03em;line-height:1">Signal</h3>
+          <span style="font-family:var(--mono);font-size:10px;letter-spacing:.17em;text-transform:uppercase;color:var(--dim)">Letter — Weekly</span>
+          <span style="margin-left:auto;font-family:var(--mono);font-size:9.5px;letter-spacing:.17em;text-transform:uppercase;padding:4px 11px;border:1px solid currentColor;border-radius:99px;white-space:nowrap;color:var(--dim)">Planned</span>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:15px">
+          <span style="font-family:var(--mono);font-size:9.5px;letter-spacing:.11em;text-transform:uppercase;padding:5px 10px;background:var(--panel);border:1px solid var(--line2);color:var(--ash)">One a week</span>
+          <span style="font-family:var(--mono);font-size:9.5px;letter-spacing:.11em;text-transform:uppercase;padding:5px 10px;background:var(--panel);border:1px solid var(--line2);color:var(--ash)">Five paragraphs max</span>
+          <span style="font-family:var(--mono);font-size:9.5px;letter-spacing:.11em;text-transform:uppercase;padding:5px 10px;background:var(--panel);border:1px solid var(--line2);color:var(--ash)">Owned audience</span>
+        </div>
+        <div style="display:grid;gap:18px;margin-top:22px;max-width:70ch">
+          <div>
+            <h4 style="font-family:var(--mono);font-weight:500;font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--band);margin-bottom:7px">What it is</h4>
+            <p style="color:var(--ash);font-size:15px;text-wrap:pretty">One letter a week: what was written, what was built, and one honest note from the week's own training — including the weeks it went badly, which are the ones people actually read.</p>
+          </div>
+          <div>
+            <h4 style="font-family:var(--mono);font-weight:500;font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--band);margin-bottom:7px">Why it matters more than the traffic</h4>
+            <p style="color:var(--ash);font-size:15px;text-wrap:pretty">Search rankings and social reach are borrowed. <b style="color:#9AA7B4;font-weight:500">A list is the only audience that can't be taken away by an algorithm change.</b> It starts on day one at forty subscribers, because a list emailed weekly from the beginning behaves nothing like one neglected for six months.</p>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <article data-reveal style="--band:#5C7FA6;position:relative;display:grid;grid-template-columns:var(--rail) 1fr;border-bottom:1px solid var(--line2);transition:background .35s ease" style-hover="background:rgba(255,255,255,.018)">
+      <div style="position:absolute;left:calc(var(--rail) - 30px);top:0;bottom:0;width:5px;background:var(--band);opacity:.8;box-shadow:0 0 18px var(--band)"></div>
+      <div style="font-family:var(--mono);font-size:11px;color:var(--ash);padding:30px 0;letter-spacing:.06em">204 m<em style="display:block;font-style:normal;color:var(--dim);font-size:9.5px;margin-top:6px;letter-spacing:.18em;text-transform:uppercase">Basement</em></div>
+      <div style="padding:30px 0 36px 30px">
+        <div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap">
+          <span style="font-family:var(--mono);font-size:10.5px;color:var(--band);letter-spacing:.12em">10</span>
+          <h3 style="font-family:var(--display);font-weight:600;font-size:clamp(23px,3.2vw,37px);letter-spacing:-.03em;line-height:1">Core Sample</h3>
+          <span style="font-family:var(--mono);font-size:10px;letter-spacing:.17em;text-transform:uppercase;color:var(--dim)">Open archive</span>
+          <span style="margin-left:auto;font-family:var(--mono);font-size:9.5px;letter-spacing:.17em;text-transform:uppercase;padding:4px 11px;border:1px solid currentColor;border-radius:99px;white-space:nowrap;color:var(--dim)">Planned</span>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:15px">
+          <span style="font-family:var(--mono);font-size:9.5px;letter-spacing:.11em;text-transform:uppercase;padding:5px 10px;background:var(--panel);border:1px solid var(--line2);color:var(--ash)">Failed drafts</span>
+          <span style="font-family:var(--mono);font-size:9.5px;letter-spacing:.11em;text-transform:uppercase;padding:5px 10px;background:var(--panel);border:1px solid var(--line2);color:var(--ash)">Abandoned builds</span>
+          <span style="font-family:var(--mono);font-size:9.5px;letter-spacing:.11em;text-transform:uppercase;padding:5px 10px;background:var(--panel);border:1px solid var(--line2);color:var(--ash)">Wrong decisions, kept</span>
+        </div>
+        <div style="display:grid;gap:18px;margin-top:22px;max-width:70ch">
+          <div>
+            <h4 style="font-family:var(--mono);font-weight:500;font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--band);margin-bottom:7px">What it is</h4>
+            <p style="color:var(--ash);font-size:15px;text-wrap:pretty">The working shown. Drafts that didn't survive, builds that were abandoned and why, training blocks that went wrong, and reasoning that later turned out to be mistaken — left up rather than quietly deleted.</p>
+          </div>
+          <div>
+            <h4 style="font-family:var(--mono);font-weight:500;font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--band);margin-bottom:7px">Why it's the deepest unit</h4>
+            <p style="color:var(--ash);font-size:15px;text-wrap:pretty">Nobody publishes this, which is precisely the argument for publishing it. <b style="color:#9AA7B4;font-weight:500">A scarp is only interesting because the failed layers are still visible.</b> Everything above this line is easier to trust because this exists underneath it.</p>
+          </div>
+        </div>
+      </div>
+    </article>
+  </section>
+
+  <section id="laws" data-screen-label="Laws" style="position:relative;z-index:1;padding:clamp(66px,10vw,124px) var(--gut);border-top:1px solid var(--line2)">
+    <div style="display:grid;grid-template-columns:var(--rail) 1fr;margin-bottom:clamp(30px,4.5vw,52px)">
+      <div style="font-family:var(--mono);font-size:10.5px;letter-spacing:.18em;color:var(--acc);padding-top:11px">§ 03</div>
+      <div>
+        <h2 style="font-family:var(--display);font-weight:600;font-size:clamp(30px,5.2vw,58px);letter-spacing:-.035em;line-height:1.02">The Laws</h2>
+        <p style="max-width:64ch;margin-top:14px;color:var(--ash);font-size:clamp(14.5px,1.6vw,16.5px);text-wrap:pretty">Constraints written down in advance, so they can't be quietly negotiated away later when they become inconvenient. <b style="color:#9AA7B4;font-weight:500">No exceptions have been granted.</b></p>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:var(--rail) 1fr">
+      <div></div>
+      <div data-reveal style="display:grid;grid-template-columns:repeat(auto-fit,minmax(272px,1fr));gap:1px;background:var(--line2);border:1px solid var(--line2)">
+        <div style="background:var(--bg);padding:24px 22px;transition:background .3s" style-hover="background:rgba(79,227,224,.045)">
+          <span style="display:block;font-family:var(--mono);font-size:10px;letter-spacing:.2em;color:var(--acc);margin-bottom:10px">LAW I</span>
+          <h5 style="font-family:var(--display);font-weight:600;font-size:18px;letter-spacing:-.02em;margin-bottom:8px">Written from inside, or not written</h5>
+          <p style="color:var(--ash);font-size:14.5px;line-height:1.55;text-wrap:pretty">If the writer hasn't done the thing at speed, under pressure, on a day it counted — the piece doesn't run. Secondhand expertise is the one commodity already in oversupply.</p>
+        </div>
+        <div style="background:var(--bg);padding:24px 22px;transition:background .3s" style-hover="background:rgba(79,227,224,.045)">
+          <span style="display:block;font-family:var(--mono);font-size:10px;letter-spacing:.2em;color:var(--acc);margin-bottom:10px">LAW II</span>
+          <h5 style="font-family:var(--display);font-weight:600;font-size:18px;letter-spacing:-.02em;margin-bottom:8px">Tools stay free</h5>
+          <p style="color:var(--ash);font-size:14.5px;line-height:1.55;text-wrap:pretty">No signup wall, no trial, no account required. A calculator behind a form is a lead magnet pretending to be a tool, and swimmers can tell the difference immediately.</p>
+        </div>
+        <div style="background:var(--bg);padding:24px 22px;transition:background .3s" style-hover="background:rgba(79,227,224,.045)">
+          <span style="display:block;font-family:var(--mono);font-size:10px;letter-spacing:.2em;color:var(--acc);margin-bottom:10px">LAW III</span>
+          <h5 style="font-family:var(--display);font-weight:600;font-size:18px;letter-spacing:-.02em;margin-bottom:8px">Disclose at the top</h5>
+          <p style="color:var(--ash);font-size:14.5px;line-height:1.55;text-wrap:pretty">Every affiliate relationship stated before the review begins, never in a footer. If a disclosure would embarrass the piece, the piece is the problem.</p>
+        </div>
+        <div style="background:var(--bg);padding:24px 22px;transition:background .3s" style-hover="background:rgba(79,227,224,.045)">
+          <span style="display:block;font-family:var(--mono);font-size:10px;letter-spacing:.2em;color:var(--acc);margin-bottom:10px">LAW IV</span>
+          <h5 style="font-family:var(--display);font-weight:600;font-size:18px;letter-spacing:-.02em;margin-bottom:8px">Nothing described as finished that isn't</h5>
+          <p style="color:var(--ash);font-size:14.5px;line-height:1.55;text-wrap:pretty">Planned means planned. In progress means in progress. Every status on this page is accurate on the day it was written, including the unflattering ones.</p>
+        </div>
+        <div style="background:var(--bg);padding:24px 22px;transition:background .3s" style-hover="background:rgba(79,227,224,.045)">
+          <span style="display:block;font-family:var(--mono);font-size:10px;letter-spacing:.2em;color:var(--acc);margin-bottom:10px">LAW V</span>
+          <h5 style="font-family:var(--display);font-weight:600;font-size:18px;letter-spacing:-.02em;margin-bottom:8px">Depth over frequency</h5>
+          <p style="color:var(--ash);font-size:14.5px;line-height:1.55;text-wrap:pretty">Publishing more is easy and worth very little. A unit stays in the log because it accumulated something, not because it filled a slot on a calendar.</p>
+        </div>
+        <div style="background:var(--bg);padding:24px 22px;transition:background .3s" style-hover="background:rgba(79,227,224,.045)">
+          <span style="display:block;font-family:var(--mono);font-size:10px;letter-spacing:.2em;color:var(--acc);margin-bottom:10px">LAW VI</span>
+          <h5 style="font-family:var(--display);font-weight:600;font-size:18px;letter-spacing:-.02em;margin-bottom:8px">Keep the failures visible</h5>
+          <p style="color:var(--ash);font-size:14.5px;line-height:1.55;text-wrap:pretty">Wrong calls stay published with a note, not deleted. The archive is load-bearing — everything above it is more credible because it's there.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="key" data-screen-label="Depth key" style="position:relative;z-index:1;padding:clamp(66px,10vw,124px) var(--gut);border-top:1px solid var(--line2)">
+    <div style="display:grid;grid-template-columns:var(--rail) 1fr;margin-bottom:clamp(30px,4.5vw,52px)">
+      <div style="font-family:var(--mono);font-size:10.5px;letter-spacing:.18em;color:var(--acc);padding-top:11px">§ 04</div>
+      <div>
+        <h2 style="font-family:var(--display);font-weight:600;font-size:clamp(30px,5.2vw,58px);letter-spacing:-.035em;line-height:1.02">Depth Key</h2>
+        <p style="max-width:66ch;margin-top:14px;color:var(--ash);font-size:clamp(14.5px,1.6vw,16.5px);text-wrap:pretty">Depth is not decoration. It records <b style="color:#9AA7B4;font-weight:500">how long a unit has been forming</b> — not its importance, not its revenue, not how recently it was mentioned. Recent work sits near the surface because it hasn't had time to become anything yet.</p>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:var(--rail) 1fr">
+      <div></div>
+      <div style="display:grid;gap:32px;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));align-items:start">
+      <div data-reveal style="display:grid;border-top:1px solid var(--line2)">
+        <div style="--band:#8FB6C9;display:grid;grid-template-columns:84px 138px 1fr;gap:16px;align-items:center;padding:15px 0;border-bottom:1px solid var(--line2)">
+          <i style="display:block;height:16px;background:linear-gradient(90deg,var(--band),transparent);box-shadow:0 0 14px var(--band)"></i>
+          <b style="font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:.14em;text-transform:uppercase;color:var(--chalk)">0–030 m · Recent</b>
+          <span style="color:var(--ash);font-size:14.5px">Built and working, but young. Still changing shape week to week.</span>
+        </div>
+        <div style="--band:#E8A94F;display:grid;grid-template-columns:84px 138px 1fr;gap:16px;align-items:center;padding:15px 0;border-bottom:1px solid var(--line2)">
+          <i style="display:block;height:16px;background:linear-gradient(90deg,var(--band),transparent);box-shadow:0 0 14px var(--band)"></i>
+          <b style="font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:.14em;text-transform:uppercase;color:var(--chalk)">031–070 m · Forming</b>
+          <span style="color:var(--ash);font-size:14.5px">Actively accumulating. In progress, with the shape becoming clear.</span>
+        </div>
+        <div style="--band:#E0604A;display:grid;grid-template-columns:84px 138px 1fr;gap:16px;align-items:center;padding:15px 0;border-bottom:1px solid var(--line2)">
+          <i style="display:block;height:16px;background:linear-gradient(90deg,var(--band),transparent);box-shadow:0 0 14px var(--band)"></i>
+          <b style="font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:.14em;text-transform:uppercase;color:var(--chalk)">071–130 m · Bedded</b>
+          <span style="color:var(--ash);font-size:14.5px">Settled into a defined form. Committed to, whether or not it has launched.</span>
+        </div>
+        <div style="--band:#4FE3B0;display:grid;grid-template-columns:84px 138px 1fr;gap:16px;align-items:center;padding:15px 0;border-bottom:1px solid var(--line2)">
+          <i style="display:block;height:16px;background:linear-gradient(90deg,var(--band),transparent);box-shadow:0 0 14px var(--band)"></i>
+          <b style="font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:.14em;text-transform:uppercase;color:var(--chalk)">131–190 m · Deep</b>
+          <span style="color:var(--ash);font-size:14.5px">Long-horizon work. Measured in years, not publishing cycles.</span>
+        </div>
+        <div style="--band:#5C7FA6;display:grid;grid-template-columns:84px 138px 1fr;gap:16px;align-items:center;padding:15px 0;border-bottom:1px solid var(--line2)">
+          <i style="display:block;height:16px;background:linear-gradient(90deg,var(--band),transparent);box-shadow:0 0 14px var(--band)"></i>
+          <b style="font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:.14em;text-transform:uppercase;color:var(--chalk)">191 m+ · Basement</b>
+          <span style="color:var(--ash);font-size:14.5px">The foundation everything rests on. Slowest to form, last to change.</span>
+        </div>
+      </div>
+      <div data-reveal style="position:relative;height:min(64vh,560px);border:1px solid var(--line2);background:linear-gradient(180deg,rgba(255,255,255,.025),rgba(255,255,255,0));overflow:hidden">
+        <div id="core3d" style="position:absolute;inset:0"></div>
+        <div style="position:absolute;top:14px;left:16px;z-index:2;font-family:var(--mono);font-size:9.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--dim);pointer-events:none">Core sample · drag to rotate · click a layer</div>
+        <div id="core3d-label" style="position:absolute;bottom:14px;left:16px;z-index:2;font-family:var(--mono);font-size:11px;letter-spacing:.14em;color:var(--acc);pointer-events:none">— hover a layer —</div>
+        <div style="position:absolute;top:0;right:0;width:34px;height:34px;border-top:1px solid var(--accSoft);border-right:1px solid var(--accSoft);pointer-events:none"></div>
+        <div style="position:absolute;bottom:0;left:0;width:34px;height:34px;border-bottom:1px solid var(--accSoft);border-left:1px solid var(--accSoft);pointer-events:none"></div>
+      </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="team" data-screen-label="Team" style="position:relative;z-index:1;padding:clamp(66px,10vw,124px) var(--gut);border-top:1px solid var(--line2)">
+    <div style="display:grid;grid-template-columns:var(--rail) 1fr;margin-bottom:clamp(30px,4.5vw,52px)">
+      <div style="font-family:var(--mono);font-size:10.5px;letter-spacing:.18em;color:var(--acc);padding-top:11px">§ 05</div>
+      <div>
+        <h2 style="font-family:var(--display);font-weight:600;font-size:clamp(30px,5.2vw,58px);letter-spacing:-.035em;line-height:1.02">The Team</h2>
+        <p style="max-width:68ch;margin-top:14px;color:var(--ash);font-size:clamp(14.5px,1.6vw,16.5px);text-wrap:pretty"><b style="color:#9AA7B4;font-weight:500">No matter the position, every person here is recognised.</b> Every role on this list carries equal weight in the record — there are no supporting roles at Scarpline, and no work goes out under the company's name that doesn't carry the name of whoever made it. Starting with one, expanding as the work justifies it.</p>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:var(--rail) 1fr">
+      <div></div>
+      <div data-reveal style="display:grid;grid-template-columns:repeat(auto-fit,minmax(258px,1fr));gap:1px;background:var(--line2);border:1px solid var(--line2)">
+        <div style="--band:#E8A94F;background:var(--bg);padding:26px 22px;display:flex;gap:16px;align-items:flex-start;transition:background .3s" style-hover="background:rgba(255,255,255,.02)">
+          <div style="width:46px;height:46px;flex-shrink:0;display:grid;place-items:center;font-family:var(--display);font-weight:700;font-size:20px;background:var(--band);color:#05070A;box-shadow:0 0 22px var(--band)">D</div>
+          <div>
+            <h5 style="font-family:var(--display);font-weight:600;font-size:19px;letter-spacing:-.02em">Daniel</h5>
+            <div style="font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--band);margin-top:6px;line-height:1.75">Founder · Head of Tech · Head of Websites · Writing</div>
+            <p style="color:var(--ash);font-size:14px;margin-top:10px;text-wrap:pretty">Competitive swimmer at regional and international level. Builds the software, writes the swim work, and rewrites everything else. The reason the sport units can say anything the internet doesn't already have.</p>
+          </div>
+        </div>
+        <div style="--band:#4FE3B0;background:var(--bg);padding:26px 22px;display:flex;gap:16px;align-items:flex-start;transition:background .3s" style-hover="background:rgba(255,255,255,.02)">
+          <div style="width:46px;height:46px;flex-shrink:0;display:grid;place-items:center;font-family:var(--display);font-weight:700;font-size:18px;border:1px dashed var(--band);color:var(--band)">◇</div>
+          <div>
+            <h5 style="font-family:var(--display);font-weight:600;font-size:19px;letter-spacing:-.02em">Open — Editorial</h5>
+            <div style="font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--band);margin-top:6px;line-height:1.75">Unfilled</div>
+            <p style="color:var(--ash);font-size:14px;margin-top:10px;text-wrap:pretty">For when the writing outpaces one person's ability to edit it honestly. Filled from people whose work is already known, not from applications.</p>
+          </div>
+        </div>
+        <div style="--band:#5C7FA6;background:var(--bg);padding:26px 22px;display:flex;gap:16px;align-items:flex-start;transition:background .3s" style-hover="background:rgba(255,255,255,.02)">
+          <div style="width:46px;height:46px;flex-shrink:0;display:grid;place-items:center;font-family:var(--display);font-weight:700;font-size:18px;border:1px dashed var(--band);color:var(--band)">◇</div>
+          <div>
+            <h5 style="font-family:var(--display);font-weight:600;font-size:19px;letter-spacing:-.02em">Open — Video</h5>
+            <div style="font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--band);margin-top:6px;line-height:1.75">Unfilled</div>
+            <p style="color:var(--ash);font-size:14px;margin-top:10px;text-wrap:pretty">Underwater technique footage is the one thing competitors can't fake and the one thing hardest to shoot alone. First hire once Studio revenue covers it.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer id="contact" data-screen-label="Footer" style="position:relative;z-index:1;border-top:1px solid var(--line);padding:clamp(56px,8vw,104px) var(--gut) 56px;display:grid;grid-template-columns:var(--rail) 1fr">
+    <div style="font-family:var(--mono);font-size:10.5px;letter-spacing:.18em;color:var(--acc)">§ End</div>
+    <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:32px;flex-wrap:wrap">
+      <div style="font-family:var(--display);font-weight:700;font-size:clamp(30px,5.6vw,64px);letter-spacing:-.045em;text-transform:uppercase;line-height:.9;background-image:linear-gradient(100deg,#EAF2F6,#4FE3E0 40%,#E8A94F 78%,#3B4956);-webkit-background-clip:text;background-clip:text;color:transparent">Scarp<span style="color:transparent">line</span></div>
+      <div style="font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);text-align:right;line-height:2.1">
+        Ten units logged · 204 m<br>
+        <a href="mailto:hello@scarpline.com" style="color:var(--ash);transition:color .2s" style-hover="color:var(--acc)">hello@scarpline.com</a><br>
+        © 2026 Scarpline · All rights reserved
+      </div>
+    </div>
+  </footer>
+</div>
+
+
+<template id="__bundler_thumbnail" data-bg-color="#05070A">
+  <svg viewBox="0 0 1200 800" xmlns="http://www.w3.org/2000/svg">
+    <rect width="1200" height="800" fill="#05070A"></rect>
+    <g stroke="#4FE3E0" stroke-width="14" stroke-linecap="round" fill="none" opacity="0.9">
+      <path d="M600 740 L600 470"></path>
+      <path d="M600 520 L470 380"></path>
+      <path d="M600 520 L730 380"></path>
+      <path d="M600 470 L600 330"></path>
+      <path d="M470 380 L400 300"></path>
+      <path d="M730 380 L800 300"></path>
+    </g>
+    <g fill="#4FE3B0" opacity="0.85">
+      <circle cx="400" cy="290" r="26"></circle>
+      <circle cx="800" cy="290" r="26"></circle>
+      <circle cx="600" cy="320" r="30"></circle>
+      <circle cx="500" cy="240" r="18"></circle>
+      <circle cx="700" cy="240" r="18"></circle>
+    </g>
+    <rect x="300" y="600" width="600" height="8" fill="#E8A94F" opacity="0.7"></rect>
+  </svg>
+</template></x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;accentColor&quot;:{&quot;editor&quot;:&quot;color&quot;,&quot;default&quot;:&quot;#4FE3E0&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;options&quot;:[&quot;#4FE3E0&quot;,&quot;#7AA2F7&quot;,&quot;#E8A94F&quot;,&quot;#59E39B&quot;],&quot;section&quot;:&quot;Look&quot;},&quot;gridOverlay&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Look&quot;},&quot;filmGrain&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Look&quot;}}">
+class Component extends DCLogic {
+  state = { depth: '000' };
+  barRef = React.createRef();
+
+  componentDidMount() {
+    this.applyProps();
+    this.boot();
+    this.canvas();
+    this.dossiers();
+    this.palette();
+    this.tickerFill();
+    this.scramble();
+    this.reticle();
+    this.minimap();
+    this.clock();
+    this.keys();
+    this.glitch();
+    this.core3d();
+
+    this.onScroll = () => {
+      this.gauge();
+      this.minimapUpdate();
+      this.heroParallax();
+      const max = Math.max(1, document.body.scrollHeight - window.innerHeight);
+      const p = Math.min(1, Math.max(0, window.scrollY / max));
+      const d = String(Math.round(p * 204)).padStart(3, '0');
+      if (d !== this.state.depth) this.setState({ depth: d });
+      if (this.barRef.current) this.barRef.current.style.width = (p * 100).toFixed(1) + '%';
+    };
+    window.addEventListener('scroll', this.onScroll, { passive: true });
+    this.onScroll();
+
+    const wide = () => {
+      const w = window.innerWidth;
+      document.querySelectorAll('[data-wide]').forEach(n => {
+        const min = n.id === 'clock' ? 1280 : 1080;
+        n.style.display = w > min ? 'flex' : 'none';
+      });
+    };
+    this.onResize = wide;
+    window.addEventListener('resize', wide);
+    wide();
+
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const nodes = Array.from(document.querySelectorAll('[data-reveal]'));
+    if (reduce) return;
+    nodes.forEach((n, i) => {
+      n.style.opacity = '0';
+      n.style.transform = 'translateY(24px)';
+      n.style.transition = 'opacity .8s cubic-bezier(.16,1,.3,1) ' + Math.min(i, 3) * 60 + 'ms, transform .8s cubic-bezier(.16,1,.3,1) ' + Math.min(i, 3) * 60 + 'ms';
+    });
+    this.io = new IntersectionObserver(es => {
+      es.forEach(e => {
+        if (e.isIntersecting) {
+          e.target.style.opacity = '1';
+          e.target.style.transform = 'none';
+          this.io.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.06, rootMargin: '0px 0px -5% 0px' });
+    nodes.forEach(n => this.io.observe(n));
+  }
+
+  /* ── particle tree germination intro ── */
+  boot() {
+    const el = document.getElementById('boot');
+    if (!el) return;
+    const cv = document.getElementById('boot-canvas');
+    if (!cv || window.matchMedia('(prefers-reduced-motion: reduce)').matches) { el.style.display = 'none'; return; }
+
+    const ctx = cv.getContext('2d');
+    let w = 0, h = 0, cx = 0, floor = 0;
+    const dpr = Math.min(2, window.devicePixelRatio || 1);
+    const size = () => {
+      w = window.innerWidth; h = window.innerHeight;
+      cv.width = w * dpr; cv.height = h * dpr;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      cx = w / 2; floor = h * 0.94;
+    };
+    size();
+    const onSize = () => { size(); build(); };
+    window.addEventListener('resize', onSize);
+
+    const BARK_D = [46, 42, 39], BARK_L = [156, 143, 126], MOSS = [86, 112, 92],
+      LEAF_D = [30, 62, 54], LEAF_M = [64, 118, 92], LEAF_L = [138, 190, 138], LEAF_Y = [196, 186, 108],
+      HAZE = [26, 40, 52], RIM = [110, 200, 205], WARM = [232, 169, 79], ACC = [79, 227, 224], EMBER = [186, 96, 62];
+    const mix = (a, b, t) => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t];
+    const LX = -0.52, LY = -0.66, LZ = 0.54;
+
+    let parts = [], tips = [], segs = [], maxDepth = 0, nodeCount = 0, leafCount = 0;
+    const GROW = 4600, HOLD = 700;
+
+    const build = () => {
+      parts = []; tips = []; segs = []; maxDepth = 0; nodeCount = 0; leafCount = 0;
+      let barkCount = 0;
+      const small = w < 760;
+      const MAXD = small ? 10 : 13;
+      const DENS = small ? 0.5 : (w * h > 1800000 ? 0.9 : 0.75);
+      const MAXSEG = small ? 1100 : 2600, MAXPART = small ? 22000 : 54000, BARKCAP = MAXPART * 0.36;
+      const rand = (a, b) => a + Math.random() * (b - a);
+      const crownY = floor - h * 0.54, crownRX = w * 0.29, crownRY = h * 0.33;
+
+      /* a spray of leaves on a twig — each leaf is a run of blade particles with its own 3D normal */
+      const leafCluster = (x, y, ang, scale, born, height) => {
+        if (parts.length > MAXPART) return;
+        const n = Math.round(rand(7, 13) * DENS) + 4;
+        for (let i = 0; i < n; i++) {
+          const la = ang + rand(-1.0, 1.0);
+          const ll = scale * rand(0.4, 1.3);
+          const lx = x + Math.cos(la) * ll, ly = y + Math.sin(la) * ll;
+          const lz = rand(-1, 1);
+          const blades = 4 + Math.round(rand(0, 4) * DENS);
+          const t = Math.random();
+          const age = Math.max(0, Math.min(1, height + rand(-0.25, 0.25)));
+          let col = mix(LEAF_D, LEAF_M, Math.min(1, age * 1.5));
+          col = mix(col, LEAF_L, Math.pow(age, 1.6) * rand(0.2, 0.9));
+          if (t < 0.05) col = mix(col, LEAF_Y, 0.7);
+          else if (t < 0.075) col = mix(col, EMBER, 0.55);
+          const sz = scale * rand(0.75, 1.15);
+          for (let b = 0; b < blades; b++) {
+            const s = b / blades;
+            const px = lx + Math.cos(la) * s * sz * 0.95 + Math.cos(la + 1.57) * Math.sin(s * 3.14) * sz * 0.32;
+            const py = ly + Math.sin(la) * s * sz * 0.95 + Math.sin(la + 1.57) * Math.sin(s * 3.14) * sz * 0.32;
+            parts.push({
+              x: px, y: py, hx: px, hy: py, z: lz,
+              born: born + rand(0, 420), r: rand(0.55, 1.25),
+              c: col, d: MAXD, ph: Math.random() * 6.283, amp: rand(1.2, 3.6),
+              vx: 0, vy: 0, a: 0, leaf: true, al: 1
+            });
+          }
+          leafCount++;
+        }
+      };
+
+      const queue = [];
+      const push = (x, y, ang, len, wid, d, t0) => {
+        if (d > MAXD || len < 3.6) return;
+        const tx = x + Math.cos(ang) * len, ty = y + Math.sin(ang) * len;
+        const q = Math.pow((tx - cx) / crownRX, 2) + Math.pow((ty - crownY) / crownRY, 2);
+        if (q > 1) {
+          const toC = Math.atan2(crownY - y, cx - x);
+          let dA = ((toC - ang + Math.PI * 3) % (Math.PI * 2)) - Math.PI;
+          ang += dA * Math.min(0.4, (q - 1) * 0.5);
+          len *= Math.max(0.5, 1 - (q - 1) * 0.5);
+          if (len < 3.6) return;
+        }
+        queue.push([x, y, ang, len, wid, d, t0]);
+      };
+
+      const branch = (x, y, ang, len, wid, d, t0) => {
+        maxDepth = Math.max(maxDepth, d);
+        nodeCount++;
+        const curve = rand(-0.2, 0.2) * (d < 3 ? 0.4 : 1) + (d > 2 ? (ang > -Math.PI / 2 ? 0.05 : -0.05) : 0) + (d < 5 ? (cx - x) / w * 0.5 : 0);
+        const mx = x + Math.cos(ang) * len * 0.5, my = y + Math.sin(ang) * len * 0.5;
+        const ex = x + Math.cos(ang + curve) * len, ey = y + Math.sin(ang + curve) * len;
+        const dur = (len / (h * 0.34)) * 560 + 80;
+        const t1 = t0 + dur;
+        const wid2 = wid * 0.72;
+        segs.push({ x, y, mx, my, ex, ey, t0, t1, d, wid });
+
+        /* particles wrapped on the cylinder surface, lit as a solid volume */
+        const px_ = -Math.sin(ang), py_ = Math.cos(ang);
+        const n = Math.max(4, Math.round(len * (d < 2 ? 2.6 : d < 4 ? 1.7 : d < 7 ? 1.0 : 0.6) * DENS));
+        const ring = barkCount > BARKCAP ? 0 : d < 2 ? 4 : d < 5 ? 3 : 2;
+        const height = Math.max(0, Math.min(1, (floor - ey) / (floor - crownY + crownRY)));
+        for (let i = 0; i < n; i++) {
+          const s = i / n;
+          const u = 1 - s;
+          const bx = u * u * x + 2 * u * s * mx + s * s * ex;
+          const by = u * u * y + 2 * u * s * my + s * s * ey;
+          const rad = wid + (wid2 - wid) * s;
+          for (let j = 0; j < ring; j++) {
+            const a2 = Math.random() * 6.283;
+            const rr = rad * (0.62 + 0.38 * Math.sqrt(Math.random()));
+            const ca = Math.cos(a2), sa = Math.sin(a2);
+            const nx = px_ * ca, ny = py_ * ca, nz = sa;
+            let sh = nx * LX + ny * LY + nz * LZ;
+            sh = 0.16 + 0.84 * Math.max(0, sh);
+            const fissure = 0.62 + 0.38 * Math.abs(Math.sin(by * 0.16 + a2 * 2.4 + d));
+            let c = mix(BARK_D, BARK_L, sh * fissure);
+            if (d < 3 && Math.random() < 0.1) c = mix(c, MOSS, rand(0.2, 0.6));
+            if (d > 5) c = mix(c, mix(BARK_L, LEAF_M, 0.35), Math.min(1, (d - 5) / 5) * 0.55);
+            if (sh > 0.86 && Math.random() < 0.14) c = mix(c, RIM, 0.35);
+            const depth = (nz + 1) / 2;
+            c = mix(HAZE, c, 0.5 + 0.5 * depth);
+            barkCount++;
+            parts.push({
+              x: bx + nx * rr, y: by + ny * rr, hx: bx + nx * rr, hy: by + ny * rr, z: nz,
+              born: t0 + s * dur + rand(0, 50),
+              r: Math.max(0.5, Math.min(2.4, rad * rand(0.2, 0.42) * (0.8 + depth * 0.35))),
+              c, d, ph: Math.random() * 6.283, amp: rand(0.15, 0.4) + d * 0.17,
+              vx: 0, vy: 0, a: 0, al: 0.55 + depth * 0.4
+            });
+          }
+        }
+
+        if (d === 0) {
+          for (let i = 0; i < 420 * DENS; i++) {
+            const side = Math.random() < 0.5 ? -1 : 1;
+            const rr = Math.pow(Math.random(), 0.55);
+            const flare = 1 + rr * 3.4;
+            const px = x + side * rr * wid * rand(1.2, 4.2);
+            const py = floor - Math.pow(1 - rr, 2.4) * len * 0.42 * Math.random() + rand(-2, 5);
+            const nz = rand(-1, 1);
+            const sh = 0.2 + 0.8 * Math.max(0, (side * -0.7) * LX + nz * LZ);
+            parts.push({
+              x: px, y: py, hx: px, hy: py, z: nz,
+              born: rand(0, 300), r: rand(0.5, 1.4),
+              c: mix(HAZE, mix(BARK_D, BARK_L, sh * 0.9), 0.55 + 0.45 * ((nz + 1) / 2)),
+              d: 0, ph: Math.random() * 6.283, amp: 0.15,
+              vx: 0, vy: 0, a: 0, al: 0.5 + 0.4 * ((nz + 1) / 2)
+            });
+            void flare;
+          }
+          for (let i = 0; i < 150 * DENS; i++) {
+            const px = cx + (Math.random() - 0.5) * wid * rand(6, 15);
+            const py = floor + Math.abs(px - cx) * rand(0.02, 0.09) + rand(-2, 3);
+            parts.push({
+              x: px, y: py, hx: px, hy: py, z: rand(-1, 0),
+              born: rand(0, 260), r: rand(0.5, 1.1),
+              c: mix(HAZE, BARK_D, rand(0.4, 1)), d: 0, ph: Math.random() * 6.283, amp: 0.1,
+              vx: 0, vy: 0, a: 0, al: rand(0.25, 0.5)
+            });
+          }
+        }
+
+        const terminal = d >= MAXD || len * 0.8 < 3.6;
+        if (d >= MAXD - 5 || terminal) leafCluster(ex, ey, ang + curve, len * rand(0.5, 1.0), t1, height);
+
+        if (terminal) {
+          tips.push({ x: ex, y: ey, born: t1 });
+          leafCluster(ex, ey, ang + curve + rand(-0.8, 0.8), len * rand(0.9, 1.9), t1 + 60, height);
+          leafCluster(mx, my, ang + rand(-1.3, 1.3), len * rand(0.55, 1.1), t1 + 130, height);
+          leafCluster(ex, ey, ang + curve + rand(-1.5, 1.5), len * rand(0.7, 1.5), t1 + 200, height);
+          return;
+        }
+
+        /* apical dominance: a leader that keeps going, a lateral that peels off */
+        const side = (nodeCount % 2 ? 1 : -1) * (Math.random() < 0.85 ? 1 : -1);
+        const up = -Math.PI / 2;
+        const trop = d < 4 ? 0.26 : d < 7 ? 0.16 : 0.2;
+        const lead = ang + curve + rand(-0.11, 0.11);
+        push(ex, ey, lead + (up - lead) * trop, len * rand(d < 2 ? 0.74 : 0.86, d < 2 ? 0.84 : 0.94), wid2 * 0.93, d + 1, t1);
+        const lat = ang + curve + side * rand(0.4, 0.92);
+        push(ex, ey, lat + (up - lat) * trop * 0.55 + (d > 4 ? 0.06 : 0), len * rand(0.62, 0.82), wid2 * 0.7, d + 1, t1);
+        if (d >= 2 && Math.random() < 0.5) {
+          const a4 = ang + curve - side * rand(0.45, 1.0);
+          push(ex, ey, a4 + (up - a4) * trop * 0.5, len * rand(0.5, 0.72), wid2 * 0.58, d + 1, t1);
+        }
+        if (d >= 1 && d <= 7 && Math.random() < 0.4) {
+          const s2 = -side;
+          const a3 = ang + curve + s2 * rand(0.7, 1.25);
+          push(mx, my, a3 + (up - a3) * trop * 0.4, len * rand(0.32, 0.52), wid * 0.4, d + 2, t0 + dur * 0.5);
+        }
+      };
+
+      push(cx, floor, -Math.PI / 2, h * 0.2, small ? 9 : 16, 0, 0);
+      while (queue.length && segs.length < MAXSEG && parts.length < MAXPART) branch.apply(null, queue.shift());
+      if (!segs.length) return;
+
+      /* canopy shading pass — outward normals, ambient occlusion into the crown interior */
+      let lx0 = 1e9, lx1 = -1e9, ly0 = 1e9, ly1 = -1e9;
+      for (const p of parts) if (p.leaf) { if (p.x < lx0) lx0 = p.x; if (p.x > lx1) lx1 = p.x; if (p.y < ly0) ly0 = p.y; if (p.y > ly1) ly1 = p.y; }
+      const ccx = (lx0 + lx1) / 2, ccy = (ly0 + ly1) / 2;
+      const crx = Math.max(1, (lx1 - lx0) / 2), cry = Math.max(1, (ly1 - ly0) / 2);
+      for (const p of parts) {
+        if (!p.leaf) continue;
+        const dx = (p.x - ccx) / crx, dy = (p.y - ccy) / cry, dz = p.z;
+        const l = Math.hypot(dx, dy, dz) || 1;
+        const nd = (dx / l) * LX + (dy / l) * LY + (dz / l) * LZ;
+        const lit = 0.2 + 0.8 * Math.max(0, nd);
+        const ao = 0.42 + 0.58 * Math.min(1, Math.pow(Math.hypot(dx, dy), 0.75));
+        let c = mix(mix(p.c, [0, 0, 0], 1 - lit * ao), LEAF_L, Math.max(0, nd - 0.72) * 0.9);
+        c = mix(HAZE, c, 0.46 + 0.54 * ((p.z + 1) / 2));
+        p.c = c;
+        p.al = (0.5 + 0.45 * ((p.z + 1) / 2)) * (0.7 + 0.3 * ao);
+        p.r *= 0.82 + 0.34 * ((p.z + 1) / 2);
+      }
+      parts.sort((a, b) => a.z - b.z);
+
+      const span = Math.max(...segs.map(s => s.t1));
+      const k = GROW / span;
+      segs.forEach(s => { s.t0 *= k; s.t1 *= k; });
+      parts.forEach(p => { p.born *= k; });
+      tips.forEach(t => { t.born *= k; });
+    };
+    build();
+
+    /* sample the real page — wordmark, tagline, chip outlines — as particle targets */
+    const targets = () => {
+      const oc = document.createElement('canvas');
+      oc.width = Math.max(2, Math.round(w)); oc.height = Math.max(2, Math.round(h));
+      const o = oc.getContext('2d');
+      o.fillStyle = '#fff';
+      o.strokeStyle = '#fff';
+      const drawText = (node, weightBoost) => {
+        const r = node.getBoundingClientRect();
+        if (!r.width || r.top > h || r.bottom < 0) return;
+        const cs = getComputedStyle(node);
+        o.font = (weightBoost || cs.fontWeight) + ' ' + cs.fontSize + ' ' + cs.fontFamily;
+        o.textBaseline = 'alphabetic';
+        if ('letterSpacing' in o) o.letterSpacing = cs.letterSpacing === 'normal' ? '0px' : cs.letterSpacing;
+        const fs = parseFloat(cs.fontSize);
+        let str = node.textContent.trim();
+        const tt = cs.textTransform;
+        if (tt === 'uppercase') str = str.toUpperCase();
+        else if (tt === 'lowercase') str = str.toLowerCase();
+        else if (tt === 'capitalize') str = str.replace(/\b\w/g, c => c.toUpperCase());
+        o.fillText(str, r.left, r.top + fs * 0.82);
+      };
+      const h1 = document.querySelector('header h1');
+      if (h1) drawText(h1);
+      document.querySelectorAll('nav a[href="#top"], nav > a:first-child').forEach(n => drawText(n));
+      const sub = document.querySelector('header h1 + *');
+      if (sub && sub.tagName !== 'DIV') drawText(sub);
+      document.querySelectorAll('header a[style*="border"], header button').forEach(n => {
+        const r = n.getBoundingClientRect();
+        if (!r.width || r.top > h || r.bottom < 0) return;
+        o.lineWidth = 1.5;
+        o.strokeRect(r.left, r.top, r.width, r.height);
+      });
+      document.querySelectorAll('header span[style*="height:1px"], header div[style*="height:1px"]').forEach(n => {
+        const r = n.getBoundingClientRect();
+        if (r.width > 20 && r.top < h) o.fillRect(r.left, r.top, r.width, 1.5);
+      });
+
+      const data = o.getImageData(0, 0, oc.width, oc.height).data;
+      const pts = [];
+      const step = w > 1400 ? 3 : 2;
+      for (let y = 0; y < oc.height; y += step) {
+        for (let x = 0; x < oc.width; x += step) {
+          if (data[(y * oc.width + x) * 4 + 3] > 130) pts.push({ x: x + (Math.random() - .5), y: y + (Math.random() - .5) });
+        }
+      }
+      return pts;
+    };
+
+    const stage = document.getElementById('boot-stage');
+    const bar = document.getElementById('boot-bar');
+    const nodesEl = document.getElementById('boot-nodes');
+    const depthEl = document.getElementById('boot-depth');
+    const ui = document.getElementById('boot-ui');
+    const STAGES = [[0, 'seeding root node'], [.12, 'extending primary trunk'], [.28, 'branching · order three'], [.46, 'branching · order six'], [.62, 'foliage unfurling'], [.82, 'canopy closed'], [.94, 'pressure critical']];
+
+    let t = 0, last = performance.now(), phase = 'grow', burstAt = 0, rings = [], done = false, assembleAt = 0;
+
+    const detonate = () => {
+      if (phase !== 'grow') return;
+      phase = 'burst';
+      burstAt = t;
+      rings.push({ t: 0, x: cx, y: h * 0.5 });
+      if (stage) stage.textContent = 'structure released';
+      if (bar) bar.style.width = '100%';
+      if (ui) ui.style.opacity = '0';
+
+      const bx = cx, by = h * 0.55;
+      for (const p of parts) {
+        const dx = p.x - bx, dy = p.y - by;
+        const dist = Math.hypot(dx, dy) || 1;
+        const power = 6 + Math.random() * 10 + (1 - Math.min(1, dist / (h * 0.6))) * 8;
+        p.vx = (dx / dist) * power + (Math.random() - 0.5) * 3;
+        p.vy = (dy / dist) * power - 2.6 - Math.random() * 4;
+      }
+
+      /* assign every particle a letterform target */
+      const pts = targets();
+      const live = parts.filter(p => p.born <= t);
+      live.sort((a, b) => a.x - b.x);
+      pts.sort((a, b) => a.x - b.x);
+      if (pts.length) {
+        const stride = live.length / pts.length;
+        for (let i = 0; i < pts.length; i++) {
+          const p = live[Math.min(live.length - 1, Math.floor(i * stride))];
+          if (!p || p.tx !== undefined) continue;
+          p.tx = pts[i].x; p.ty = pts[i].y;
+          p.delay = 190 + Math.random() * 300;
+          p.tc = [
+            255 - Math.max(0, Math.min(1, (pts[i].x - w * 0.06) / (w * 0.55))) * 40,
+            230 - Math.max(0, Math.min(1, (pts[i].x - w * 0.06) / (w * 0.55))) * 40,
+            200
+          ];
+        }
+      }
+      assembleAt = t + 190;
+
+      setTimeout(() => {
+        phase = 'reveal';
+        el.style.backgroundColor = 'rgba(5,7,10,0)';
+        document.querySelectorAll('header, nav').forEach(n => {
+          n.style.animation = 'none';
+          void n.offsetWidth;
+          n.style.animation = 'rise 1.15s cubic-bezier(.16,1,.3,1) both';
+        });
+      }, 2500);
+
+      setTimeout(() => {
+        done = true;
+        el.style.display = 'none';
+        window.removeEventListener('resize', onSize);
+        if (this.bootRaf) cancelAnimationFrame(this.bootRaf);
+      }, 4200);
+    };
+
+    el.style.cursor = 'pointer';
+    el.addEventListener('click', detonate);
+    setTimeout(() => { if (phase === 'grow') detonate(); }, 13000);
+    this.onBootKey = e => { if (!done && (e.key === 'Escape' || e.key === ' ' || e.key === 'Enter')) detonate(); };
+    window.addEventListener('keydown', this.onBootKey);
+
+    const frame = now => {
+      const dt = Math.min(48, now - last); last = now;
+      t += dt;
+      ctx.clearRect(0, 0, w, h);
+      ctx.globalCompositeOperation = phase === 'grow' ? 'source-over' : 'lighter';
+
+      if (phase === 'grow') {
+        const prog = Math.min(1, t / GROW);
+        if (bar) bar.style.width = (prog * 100).toFixed(1) + '%';
+        const grown = segs.filter(s => s.t1 <= t).length;
+        if (nodesEl) nodesEl.textContent = String(grown);
+        if (depthEl) depthEl.textContent = String(Math.min(maxDepth, Math.round(prog * maxDepth)));
+        if (stage) {
+          for (let i = STAGES.length - 1; i >= 0; i--) { if (prog >= STAGES[i][0]) { if (stage.textContent !== STAGES[i][1]) stage.textContent = STAGES[i][1]; break; } }
+        }
+
+        ctx.lineCap = 'round';
+        for (const s of segs) {
+          if (t < s.t0) continue;
+          const k = Math.min(1, (t - s.t0) / (s.t1 - s.t0));
+          const u = 1 - k;
+          const ex = u * u * s.x + 2 * u * k * s.mx + k * k * s.ex;
+          const ey = u * u * s.y + 2 * u * k * s.my + k * k * s.ey;
+          ctx.beginPath();
+          ctx.moveTo(s.x, s.y);
+          ctx.quadraticCurveTo(s.mx, s.my, ex, ey);
+          ctx.strokeStyle = s.d < 4 ? 'rgba(38,34,31,.85)' : 'rgba(44,48,44,.6)';
+          ctx.lineWidth = s.wid * 1.15;
+          ctx.stroke();
+          if (k < 1) {
+            ctx.beginPath();
+            ctx.arc(ex, ey, Math.max(1.2, s.wid * 0.3), 0, 6.283);
+            ctx.fillStyle = 'rgba(140,220,200,.55)';
+            ctx.fill();
+          }
+        }
+
+        if (t >= GROW + HOLD) detonate();
+      }
+
+      const flying = phase !== 'grow';
+      const bt = flying ? (t - burstAt) : 0;
+      const step = dt / 16.7;
+
+      for (const p of parts) {
+        if (t < p.born) continue;
+        const age = t - p.born;
+        let col = p.c, alpha;
+        if (!flying) {
+          p.a = Math.min(1, age / 300);
+          const gust = 0.3 + Math.sin(t * 0.0004) * 0.25;
+          const swayAmt = p.amp * (p.leaf ? 1.5 : 0.6) * gust;
+          p.x = p.hx + Math.sin(t * 0.0013 + p.ph) * swayAmt;
+          p.y = p.hy + Math.cos(t * 0.0011 + p.ph * 1.7) * swayAmt * 0.5;
+          alpha = p.a * (p.al === undefined ? 0.62 : p.al);
+        } else {
+          if (p.tx !== undefined && t > assembleAt + p.delay) {
+            const k = Math.min(1, (t - assembleAt - p.delay) / 900);
+            const pull = 0.055 + k * 0.16;
+            p.vx += (p.tx - p.x) * pull;
+            p.vy += (p.ty - p.y) * pull;
+            p.vx *= 0.76; p.vy *= 0.76;
+            p.x += p.vx * step; p.y += p.vy * step;
+            col = mix(p.c, p.tc, Math.min(1, k * 1.4));
+            p.a = Math.min(1, (p.a || 0) + 0.06 * step);
+            const settled = Math.hypot(p.tx - p.x, p.ty - p.y) < 2.2;
+            alpha = p.a * (settled ? 0.95 : 0.7);
+            if (phase === 'reveal') alpha *= Math.max(0, 1 - (t - assembleAt - 2310) / 1500);
+          } else {
+            p.x += p.vx * step; p.y += p.vy * step;
+            p.vy += 0.05 * step;
+            p.vx *= 0.985; p.vy *= 0.985;
+            alpha = p.a * Math.max(0, 1 - bt / 1200);
+          }
+        }
+        if (alpha <= 0.012) continue;
+        ctx.fillStyle = 'rgba(' + (col[0] | 0) + ',' + (col[1] | 0) + ',' + (col[2] | 0) + ',' + alpha.toFixed(3) + ')';
+        const rr = p.r * (p.tx !== undefined && flying ? 0.85 : flying ? 1 + bt / 1400 : 1);
+        ctx.fillRect(p.x - rr, p.y - rr, rr * 2, rr * 2);
+        if (p.leaf && !flying && alpha > 0.72) {
+          ctx.fillStyle = 'rgba(200,232,205,0.05)';
+          ctx.fillRect(p.x - rr * 2.4, p.y - rr * 2.4, rr * 4.8, rr * 4.8);
+        }
+      }
+
+      for (const t2 of tips) {
+        if (phase !== 'grow' || t < t2.born) continue;
+        const k = Math.min(1, (t - t2.born) / 520);
+        const rr = 2 + k * 9;
+        ctx.strokeStyle = 'rgba(79,227,224,' + (0.4 * (1 - k)).toFixed(3) + ')';
+        ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.arc(t2.x, t2.y, rr, 0, 6.283); ctx.stroke();
+      }
+
+      for (const r of rings) {
+        r.t += dt;
+        const k = r.t / 1300;
+        if (k > 1) continue;
+        const rr = k * Math.hypot(w, h) * 0.75;
+        ctx.strokeStyle = 'rgba(79,227,224,' + (0.55 * (1 - k)).toFixed(3) + ')';
+        ctx.lineWidth = 2.5 * (1 - k) + 0.4;
+        ctx.beginPath(); ctx.arc(r.x, r.y, rr, 0, 6.283); ctx.stroke();
+        ctx.strokeStyle = 'rgba(232,169,79,' + (0.28 * (1 - k)).toFixed(3) + ')';
+        ctx.beginPath(); ctx.arc(r.x, r.y, rr * 0.82, 0, 6.283); ctx.stroke();
+      }
+
+      if (phase === 'burst' && bt < 190) {
+        ctx.globalCompositeOperation = 'source-over';
+        ctx.fillStyle = 'rgba(220,245,255,' + (0.5 * (1 - bt / 190)).toFixed(3) + ')';
+        ctx.fillRect(0, 0, w, h);
+      }
+
+      ctx.globalCompositeOperation = 'source-over';
+      if (!done) this.bootRaf = requestAnimationFrame(frame);
+    };
+    this.bootRaf = requestAnimationFrame(frame);
+  }
+
+  /* ── canvas strata field ── */
+  canvas() {
+    const c = document.getElementById('strata-canvas');
+    if (!c || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const ctx = c.getContext('2d');
+    let w = 0, h = 0, dpr = Math.min(2, window.devicePixelRatio || 1);
+    const N = 110;
+    const parts = Array.from({ length: N }, () => ({
+      x: Math.random(), y: Math.random(), z: Math.random() * .8 + .2,
+      r: Math.random() * 1.5 + .3, s: Math.random() * .00018 + .00004
+    }));
+    const size = () => {
+      w = c.clientWidth; h = c.clientHeight;
+      c.width = w * dpr; c.height = h * dpr;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    };
+    size();
+    this.onCanvasResize = size;
+    window.addEventListener('resize', size);
+    const acc = () => (this.props.accentColor || '#4FE3E0');
+    const draw = () => {
+      ctx.clearRect(0, 0, w, h);
+      const sc = window.scrollY;
+      for (let k = 0; k < 7; k++) {
+        const y = ((k * 260 - sc * (0.06 + k * 0.02)) % (h + 300) + h + 300) % (h + 300) - 150;
+        const g = ctx.createLinearGradient(0, y, w, y);
+        g.addColorStop(0, 'rgba(120,170,200,0)');
+        g.addColorStop(.5, 'rgba(120,170,200,.07)');
+        g.addColorStop(1, 'rgba(120,170,200,0)');
+        ctx.fillStyle = g;
+        ctx.fillRect(0, y, w, 1);
+      }
+      for (const p of parts) {
+        p.y -= p.s * (1 + p.z);
+        if (p.y < -0.05) { p.y = 1.05; p.x = Math.random(); }
+        const px = p.x * w + Math.sin((p.y + sc * 0.0006) * 6) * 18 * p.z;
+        const py = ((p.y * h) - sc * 0.12 * p.z + h * 3) % h;
+        ctx.globalAlpha = 0.10 + p.z * 0.35;
+        ctx.fillStyle = p.z > .78 ? acc() : '#8FB6C9';
+        ctx.beginPath();
+        ctx.arc(px, py, p.r * p.z, 0, 6.283);
+        ctx.fill();
+      }
+      ctx.globalAlpha = 1;
+      this.raf = requestAnimationFrame(draw);
+    };
+    draw();
+  }
+
+  /* ── collapsible unit dossiers + spotlight ── */
+  dossiers() {
+    const arts = Array.from(document.querySelectorAll('#units article'));
+    arts.forEach((art, idx) => {
+      if (art.dataset.wired) return;
+      art.dataset.wired = '1';
+      const body = art.children[art.children.length - 1];
+      const head = body.querySelector('div');
+      const kids = Array.from(body.children).slice(2);
+      if (!kids.length) return;
+      const wrap = document.createElement('div');
+      wrap.style.cssText = 'overflow:hidden;transition:height .55s cubic-bezier(.16,1,.3,1),opacity .45s ease;height:0;opacity:0';
+      kids.forEach(k => wrap.appendChild(k));
+      const bar = document.createElement('button');
+      bar.style.cssText = 'margin-top:18px;display:flex;align-items:center;gap:10px;font-family:var(--mono);font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--ash);background:none;border:none;padding:0;cursor:pointer';
+      bar.innerHTML = '<span style="display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border:1px solid currentColor">+</span><span>Open dossier</span>';
+      body.appendChild(bar);
+      body.appendChild(wrap);
+      const set = open => {
+        art.dataset.open = open ? '1' : '';
+        wrap.style.height = open ? wrap.scrollHeight + 'px' : '0';
+        wrap.style.opacity = open ? '1' : '0';
+        wrap.style.marginTop = open ? '20px' : '0';
+        bar.children[0].textContent = open ? '−' : '+';
+        bar.children[1].textContent = open ? 'Close dossier' : 'Open dossier';
+        bar.style.color = open ? 'var(--acc)' : 'var(--ash)';
+        if (open) setTimeout(() => { if (art.dataset.open) wrap.style.height = 'auto'; }, 600);
+      };
+      art.__set = set;
+      bar.addEventListener('click', () => set(!art.dataset.open));
+      if (head) { head.style.cursor = 'pointer'; head.addEventListener('click', () => set(!art.dataset.open)); }
+      if (idx === 0) requestAnimationFrame(() => set(true));
+      art.addEventListener('pointermove', e => {
+        const r = art.getBoundingClientRect();
+        art.style.backgroundImage = 'radial-gradient(420px circle at ' + (e.clientX - r.left) + 'px ' + (e.clientY - r.top) + 'px, rgba(255,255,255,.045), transparent 62%)';
+      });
+      art.addEventListener('pointerleave', () => { art.style.backgroundImage = 'none'; });
+    });
+    const all = document.getElementById('expand-all');
+    if (all && !all.dataset.wired) {
+      all.dataset.wired = '1';
+      all.addEventListener('click', () => {
+        const open = all.textContent.trim() === 'Expand all';
+        arts.forEach(a => a.__set && a.__set(open));
+        all.textContent = open ? 'Collapse all' : 'Expand all';
+      });
+    }
+  }
+
+  /* ── depth gauge ── */
+  gauge() {
+    const g = document.getElementById('gauge');
+    const sec = document.getElementById('units');
+    if (!g || !sec) return;
+    const r = sec.getBoundingClientRect();
+    const vis = r.top < window.innerHeight * .55 && r.bottom > window.innerHeight * .3 && window.innerWidth > 900;
+    g.style.display = 'flex';
+    g.style.opacity = vis ? '1' : '0';
+    const p = Math.min(1, Math.max(0, (window.innerHeight * .5 - r.top) / Math.max(1, r.height)));
+    const mark = document.getElementById('gauge-mark');
+    const read = document.getElementById('gauge-read');
+    if (mark) mark.style.top = (p * 100).toFixed(1) + '%';
+    if (read) read.textContent = String(Math.round(p * 204)).padStart(3, '0') + 'm';
+  }
+
+  /* ── live ticker ── */
+  tickerFill() {
+    const t = document.getElementById('ticker');
+    if (!t || t.dataset.wired) return;
+    t.dataset.wired = '1';
+    const items = ['Jarvis · built · 012 m', 'The Forge · built · 024 m', 'Streamlyne · in progress · 041 m', 'Splits · in progress · 058 m', 'Books · in progress · 076 m', 'Reviews · planned · 094 m', 'Cross Section · planned · 118 m', 'Studio · open for work · 142 m', 'Signal · planned · 168 m', 'Core Sample · planned · 204 m'];
+    const row = items.map(s => '<span style="padding:0 26px">' + s + '</span>').join('<span style="color:var(--acc)">◆</span>');
+    t.innerHTML = row + '<span style="color:var(--acc)">◆</span>' + row + '<span style="color:var(--acc)">◆</span>';
+  }
+
+  /* ── scramble headings on reveal ── */
+  scramble() {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ/\\<>#$%*';
+    const run = el => {
+      const final = el.textContent;
+      let f = 0;
+      const total = 16;
+      const tick = () => {
+        f++;
+        const keep = Math.floor((f / total) * final.length);
+        el.textContent = final.slice(0, keep) + final.slice(keep).replace(/\S/g, () => chars[Math.floor(Math.random() * chars.length)]);
+        if (f < total) setTimeout(tick, 34); else el.textContent = final;
+      };
+      tick();
+    };
+    const io = new IntersectionObserver(es => {
+      es.forEach(e => { if (e.isIntersecting) { run(e.target); io.unobserve(e.target); } });
+    }, { threshold: .6 });
+    document.querySelectorAll('section h2').forEach(h => io.observe(h));
+    this.scrambleIo = io;
+  }
+
+  /* ── unit registry ── */
+  units() {
+    if (!this._units) {
+      this._units = Array.from(document.querySelectorAll('#units article')).map(a => ({
+        el: a,
+        name: (a.querySelector('h3') || {}).textContent || '',
+        depth: ((a.textContent || '').match(/\d{3}\s*m/) || ['—'])[0],
+        band: a.style.getPropertyValue('--band').trim() || '#8FB6C9'
+      }));
+    }
+    return this._units;
+  }
+
+  /* ── hero parallax ── */
+  heroParallax() {
+    const h = document.querySelector('header h1');
+    if (!h) return;
+    const y = window.scrollY;
+    if (y > window.innerHeight * 1.2) return;
+    const p = Math.min(1, y / Math.max(1, window.innerHeight * 0.9));
+    h.style.transform = 'translateY(' + (y * 0.16).toFixed(1) + 'px) scale(' + (1 - p * 0.05).toFixed(4) + ')';
+    h.style.opacity = String(1 - p * 0.75);
+  }
+
+  /* ── crosshair reticle ── */
+  reticle() {
+    const r = document.getElementById('reticle');
+    if (!r || window.matchMedia('(pointer: coarse)').matches) return;
+    const H = document.getElementById('ret-h'), V = document.getElementById('ret-v'),
+      B = document.getElementById('ret-box'), T = document.getElementById('ret-txt');
+    let tx = 0, ty = 0, cx = 0, cy = 0, live = false;
+    this.onMove = e => {
+      if (!live) { live = true; cx = tx = e.clientX; cy = ty = e.clientY; r.style.display = 'block'; }
+      tx = e.clientX; ty = e.clientY;
+    };
+    this.onLeave = () => { r.style.display = 'none'; live = false; };
+    document.addEventListener('pointerleave', this.onLeave);
+    window.addEventListener('pointermove', this.onMove, { passive: true });
+    const loop = () => {
+      if (!live) { this.retRaf = requestAnimationFrame(loop); return; }
+      cx += (tx - cx) * 0.22; cy += (ty - cy) * 0.22;
+      H.style.top = cy.toFixed(1) + 'px';
+      V.style.left = cx.toFixed(1) + 'px';
+      B.style.left = cx.toFixed(1) + 'px';
+      B.style.top = cy.toFixed(1) + 'px';
+      T.style.left = cx.toFixed(1) + 'px';
+      T.style.top = cy.toFixed(1) + 'px';
+      const d = Math.round((window.scrollY + cy) / Math.max(1, document.body.scrollHeight) * 204);
+      T.textContent = String(d).padStart(3, '0') + 'M · ' + Math.round(cx) + ',' + Math.round(cy);
+      this.retRaf = requestAnimationFrame(loop);
+    };
+    loop();
+  }
+
+  /* ── right-edge minimap ── */
+  minimap() {
+    const m = document.getElementById('minimap');
+    if (!m || m.dataset.wired) return;
+    m.dataset.wired = '1';
+    this.units().forEach((u, i) => {
+      const seg = document.createElement('div');
+      seg.style.cssText = 'position:relative;width:26px;height:14px;background:' + u.band + ';opacity:.28;cursor:pointer;transition:opacity .3s,width .3s';
+      const tip = document.createElement('span');
+      tip.textContent = u.depth + '  ' + u.name;
+      tip.style.cssText = 'position:absolute;right:34px;top:50%;transform:translateY(-50%);white-space:nowrap;font-family:var(--mono);font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--chalk);background:rgba(9,13,18,.95);border:1px solid var(--line);padding:5px 9px;opacity:0;pointer-events:none;transition:opacity .2s';
+      seg.appendChild(tip);
+      seg.addEventListener('pointerenter', () => { seg.style.opacity = '1'; seg.style.width = '38px'; tip.style.opacity = '1'; });
+      seg.addEventListener('pointerleave', () => { tip.style.opacity = '0'; seg.style.width = '26px'; this.minimapUpdate(); });
+      seg.addEventListener('click', () => this.goToUnit(i, true));
+      m.appendChild(seg);
+    });
+    m.style.display = 'flex';
+  }
+
+  minimapUpdate() {
+    const m = document.getElementById('minimap');
+    if (!m || !m.children.length) return;
+    const sec = document.getElementById('units');
+    const r = sec.getBoundingClientRect();
+    const vis = r.top < window.innerHeight * .6 && r.bottom > window.innerHeight * .3 && window.innerWidth > 900;
+    m.style.opacity = vis ? '1' : '0';
+    m.style.pointerEvents = vis ? 'auto' : 'none';
+    this.units().forEach((u, i) => {
+      const rr = u.el.getBoundingClientRect();
+      const active = rr.top < window.innerHeight * .5 && rr.bottom > window.innerHeight * .3;
+      const seg = m.children[i];
+      if (seg && seg.style.width === '26px') seg.style.opacity = active ? '1' : '.28';
+      this._active = active ? i : this._active;
+    });
+  }
+
+  goToUnit(i, open) {
+    const u = this.units()[i];
+    if (!u) return;
+    this._active = i;
+    if (open && u.el.__set) u.el.__set(true);
+    window.scrollTo({ top: u.el.getBoundingClientRect().top + window.scrollY - 90, behavior: 'smooth' });
+  }
+
+  /* ── nav clock ── */
+  clock() {
+    const c = document.getElementById('clock');
+    if (!c || c.dataset.wired) return;
+    c.dataset.wired = '1';
+    const t0 = Date.now();
+    const tick = () => {
+      const d = new Date();
+      const utc = d.toISOString().slice(11, 19);
+      const s = Math.floor((Date.now() - t0) / 1000);
+      c.innerHTML = '<span style="width:1px;height:16px;background:var(--line);display:block"></span>' +
+        '<span style="color:var(--ash)">' + utc + ' UTC</span>' +
+        '<span style="color:var(--acc)"> · ' + String(Math.floor(s / 60)).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0') + ' on site</span>';
+    };
+    tick();
+    this.clockId = setInterval(tick, 1000);
+  }
+
+  /* ── glitch on unit names ── */
+  glitch() {
+    if (window.matchMedia('(pointer: coarse)').matches) return;
+    const chars = '#$%&/\\<>*+=';
+    document.querySelectorAll('#units article h3').forEach(h => {
+      if (h.dataset.glitch) return;
+      h.dataset.glitch = '1';
+      h.addEventListener('pointerenter', () => {
+        const final = h.textContent;
+        let f = 0;
+        const tick = () => {
+          f++;
+          h.textContent = final.split('').map((ch, i) => (Math.random() < 0.18 && ch !== ' ' && f < 7) ? chars[Math.floor(Math.random() * chars.length)] : final[i]).join('');
+          if (f < 7) setTimeout(tick, 32); else h.textContent = final;
+        };
+        tick();
+      });
+    });
+  }
+
+  /* ── keyboard control ── */
+  keys() {
+    if (this._keysWired) return;
+    this._keysWired = true;
+    this._active = 0;
+    this.onKeys = e => {
+      const pal = document.getElementById('palette');
+      const sc = document.getElementById('shortcuts');
+      const typing = /input|textarea/i.test((e.target.tagName || ''));
+      if (typing) return;
+      if (e.key === '?' || (e.key === '/' && e.shiftKey)) { e.preventDefault(); sc.style.display = sc.style.display === 'flex' ? 'none' : 'flex'; return; }
+      if (e.key === 'Escape') { sc.style.display = 'none'; return; }
+      if (pal && pal.style.display === 'flex') return;
+      const k = e.key.toLowerCase();
+      if (k === 'j') { e.preventDefault(); this.goToUnit(Math.min(this.units().length - 1, (this._active || 0) + 1)); }
+      else if (k === 'k') { e.preventDefault(); this.goToUnit(Math.max(0, (this._active || 0) - 1)); }
+      else if (k === 'e') { const b = document.getElementById('expand-all'); if (b) b.click(); }
+      else if (k === 'g') { const u = document.getElementById('units'); if (u) window.scrollTo({ top: u.offsetTop - 60, behavior: 'smooth' }); }
+      else if (e.key === 'Enter') {
+        const u = this.units()[this._active || 0];
+        if (u && u.el.__set) u.el.__set(!u.el.dataset.open);
+      }
+    };
+    window.addEventListener('keydown', this.onKeys);
+    const sc = document.getElementById('shortcuts');
+    if (sc) sc.addEventListener('click', e => { if (e.target === sc) sc.style.display = 'none'; });
+  }
+
+  /* ── 3D core sample ── */
+  async core3d() {
+    const host = document.getElementById('core3d');
+    if (!host || host.dataset.wired) return;
+    host.dataset.wired = '1';
+    let THREE;
+    try { THREE = await import('https://esm.sh/three@0.160.1'); } catch (err) { host.style.display = 'none'; return; }
+    const units = this.units();
+    const W = () => host.clientWidth, H = () => host.clientHeight;
+    const scene = new THREE.Scene();
+    const cam = new THREE.PerspectiveCamera(34, W() / H(), 0.1, 100);
+    cam.position.set(0, 0, 15.5);
+    const rend = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    rend.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
+    rend.setSize(W(), H());
+    host.appendChild(rend.domElement);
+    rend.domElement.style.cssText = 'display:block;width:100%;height:100%;cursor:grab';
+
+    scene.add(new THREE.AmbientLight(0xffffff, 0.55));
+    const key = new THREE.DirectionalLight(0xffffff, 1.5); key.position.set(4, 6, 8); scene.add(key);
+    const rim = new THREE.PointLight(0x4fe3e0, 55, 40); rim.position.set(-6, 2, 4); scene.add(rim);
+
+    const group = new THREE.Group();
+    const hSeg = 0.86, R = 1.5;
+    units.forEach((u, i) => {
+      const geo = new THREE.CylinderGeometry(R, R, hSeg * 0.94, 48, 1, false);
+      const mat = new THREE.MeshStandardMaterial({ color: new THREE.Color(u.band), roughness: 0.72, metalness: 0.22 });
+      const mesh = new THREE.Mesh(geo, mat);
+      mesh.position.y = (units.length / 2 - i - 0.5) * hSeg;
+      mesh.userData = { i, base: mesh.position.x, mat };
+      group.add(mesh);
+      const ring = new THREE.Mesh(
+        new THREE.TorusGeometry(R * 1.005, 0.012, 8, 64),
+        new THREE.MeshBasicMaterial({ color: 0x0a0e13 })
+      );
+      ring.rotation.x = Math.PI / 2;
+      ring.position.y = mesh.position.y - hSeg / 2;
+      group.add(ring);
+    });
+    group.rotation.z = 0.05;
+    scene.add(group);
+
+    const ray = new THREE.Raycaster(), ptr = new THREE.Vector2();
+    const label = document.getElementById('core3d-label');
+    let hovered = -1, drag = false, lastX = 0, vel = 0.0032, rot = 0.4;
+
+    const onPtr = e => {
+      const r = host.getBoundingClientRect();
+      ptr.x = ((e.clientX - r.left) / r.width) * 2 - 1;
+      ptr.y = -((e.clientY - r.top) / r.height) * 2 + 1;
+      if (drag) { rot += (e.clientX - lastX) * 0.008; lastX = e.clientX; }
+    };
+    host.addEventListener('pointermove', onPtr);
+    host.addEventListener('pointerdown', e => { drag = true; lastX = e.clientX; rend.domElement.style.cursor = 'grabbing'; });
+    window.addEventListener('pointerup', () => { drag = false; rend.domElement.style.cursor = 'grab'; });
+    host.addEventListener('click', () => { if (hovered >= 0) this.goToUnit(hovered, true); });
+    host.addEventListener('pointerleave', () => { hovered = -1; });
+
+    const resize = () => { cam.aspect = W() / H(); cam.updateProjectionMatrix(); rend.setSize(W(), H()); };
+    this.onCoreResize = resize;
+    window.addEventListener('resize', resize);
+
+    const tick = () => {
+      if (!drag) rot += vel;
+      group.rotation.y = rot;
+      ray.setFromCamera(ptr, cam);
+      const hits = ray.intersectObjects(group.children.filter(o => o.userData && o.userData.mat));
+      const idx = hits.length ? hits[0].object.userData.i : -1;
+      if (idx !== hovered) {
+        hovered = idx;
+        group.children.forEach(o => { if (o.userData && o.userData.mat) o.userData.mat.emissive = new THREE.Color(0x000000); });
+        if (idx >= 0) {
+          const m = group.children.find(o => o.userData && o.userData.i === idx);
+          if (m) m.userData.mat.emissive = new THREE.Color(units[idx].band).multiplyScalar(0.45);
+          if (label) label.textContent = units[idx].depth + '  ·  ' + units[idx].name.toUpperCase();
+        } else if (label) label.textContent = '— hover a layer —';
+      }
+      group.children.forEach(o => {
+        if (!o.userData || !o.userData.mat) return;
+        const t = o.userData.i === hovered ? 0.42 : 0;
+        o.position.x += (t - o.position.x) * 0.12;
+      });
+      rend.render(scene, cam);
+      this.coreRaf = requestAnimationFrame(tick);
+    };
+    tick();
+  }
+
+  /* ── command palette ── */
+  palette() {
+    const pal = document.getElementById('palette');
+    const input = document.getElementById('palette-input');
+    const list = document.getElementById('palette-list');
+    const btn = document.getElementById('palette-open');
+    if (!pal || pal.dataset.wired) return;
+    pal.dataset.wired = '1';
+    const entries = [];
+    document.querySelectorAll('section[id], header[id], footer[id]').forEach(s => {
+      const h = s.querySelector('h1,h2');
+      if (h) entries.push({ label: h.textContent, kind: 'Section', id: s.id });
+    });
+    document.querySelectorAll('#units article').forEach((a, i) => {
+      const n = a.querySelector('h3');
+      const d = a.querySelector('div[style*="letter-spacing:.06em"]');
+      if (n) entries.push({ label: n.textContent, kind: (d ? d.textContent.slice(0, 5) : '') + ' · Unit', el: a, i });
+    });
+    let sel = 0, shown = entries;
+    const render = () => {
+      list.innerHTML = shown.map((e, i) =>
+        '<div data-i="' + i + '" style="display:flex;align-items:center;justify-content:space-between;gap:14px;padding:12px 18px;cursor:pointer;border-bottom:1px solid rgba(150,190,220,.05);background:' + (i === sel ? 'rgba(79,227,224,.09)' : 'transparent') + '">' +
+        '<span style="font-family:var(--display);font-size:14px;color:' + (i === sel ? 'var(--acc)' : 'var(--chalk)') + '">' + e.label + '</span>' +
+        '<span style="font-family:var(--mono);font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--dim)">' + e.kind + '</span></div>').join('');
+    };
+    const go = e => {
+      close();
+      if (e.el) { e.el.__set && e.el.__set(true); e.el.scrollTo; window.scrollTo({ top: e.el.getBoundingClientRect().top + window.scrollY - 90, behavior: 'smooth' }); }
+      else { const t = document.getElementById(e.id); if (t) window.scrollTo({ top: t.getBoundingClientRect().top + window.scrollY - 70, behavior: 'smooth' }); }
+    };
+    const open = () => { pal.style.display = 'flex'; input.value = ''; shown = entries; sel = 0; render(); setTimeout(() => input.focus(), 30); };
+    const close = () => { pal.style.display = 'none'; };
+    this.openPalette = open;
+    if (btn) btn.addEventListener('click', open);
+    pal.addEventListener('click', e => { if (e.target === pal) close(); });
+    list.addEventListener('click', e => {
+      const row = e.target.closest('[data-i]');
+      if (row) go(shown[+row.dataset.i]);
+    });
+    input.addEventListener('input', () => {
+      const q = input.value.toLowerCase();
+      shown = entries.filter(e => (e.label + ' ' + e.kind).toLowerCase().includes(q));
+      sel = 0; render();
+    });
+    this.onKey = e => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); pal.style.display === 'flex' ? close() : open(); return; }
+      if (pal.style.display !== 'flex') return;
+      if (e.key === 'Escape') close();
+      else if (e.key === 'ArrowDown') { e.preventDefault(); sel = Math.min(shown.length - 1, sel + 1); render(); }
+      else if (e.key === 'ArrowUp') { e.preventDefault(); sel = Math.max(0, sel - 1); render(); }
+      else if (e.key === 'Enter' && shown[sel]) { e.preventDefault(); go(shown[sel]); }
+    };
+    window.addEventListener('keydown', this.onKey);
+    render();
+  }
+
+  renderVals() { return { depth: this.state.depth, barRef: this.barRef }; }
+
+  componentDidUpdate() { this.applyProps(); }
+
+  componentWillUnmount() {
+    window.removeEventListener('scroll', this.onScroll);
+    window.removeEventListener('resize', this.onResize);
+    if (this.onCanvasResize) window.removeEventListener('resize', this.onCanvasResize);
+    if (this.onKey) window.removeEventListener('keydown', this.onKey);
+    if (this.raf) cancelAnimationFrame(this.raf);
+    if (this.retRaf) cancelAnimationFrame(this.retRaf);
+    if (this.bootRaf) cancelAnimationFrame(this.bootRaf);
+    if (this.onBootKey) window.removeEventListener('keydown', this.onBootKey);
+    if (this.coreRaf) cancelAnimationFrame(this.coreRaf);
+    if (this.clockId) clearInterval(this.clockId);
+    if (this.onMove) window.removeEventListener('pointermove', this.onMove);
+    if (this.onLeave) document.removeEventListener('pointerleave', this.onLeave);
+    if (this.onKeys) window.removeEventListener('keydown', this.onKeys);
+    if (this.onCoreResize) window.removeEventListener('resize', this.onCoreResize);
+    if (this.scrambleIo) this.scrambleIo.disconnect();
+    if (this.io) this.io.disconnect();
+  }
+
+  applyProps() {
+    const r = document.documentElement.style;
+    const acc = this.props.accentColor || '#4FE3E0';
+    r.setProperty('--acc', acc);
+    r.setProperty('--accSoft', acc + '6B');
+    const grid = document.getElementById('hud-grid');
+    if (grid) grid.style.display = this.props.gridOverlay === false ? 'none' : 'block';
+    const grain = document.getElementById('hud-grain');
+    if (grain) grain.style.opacity = this.props.filmGrain === false ? '0' : '0.3';
+  }
+}
+</script>
+</body>
+</html>
